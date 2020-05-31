@@ -25,3 +25,26 @@
 #container a {
   text-decoration: none;
 }
+
+.userBadge{
+  border-radius: 90px;
+  width: 24px;
+  height: 24px;
+  background: #E0E9F9;
+  color: #789FE6;
+  align-items: center;
+  display: flex;
+  font-size: 14px;
+  justify-content: center;
+  position: absolute;
+  top: 31px;
+}
+
+.lastSection{
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-end;
+  height: 73%;
+  padding-top:2px;
+}

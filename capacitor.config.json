@@ -1,13 +1,5 @@
 {
-  "appId": "io.ionic.starter",
-  "appName": "messenger",
-  "bundledWebRuntime": false,
-  "npmClient": "npm",
-  "webDir": "www",
-  "plugins": {
-    "SplashScreen": {
-      "launchShowDuration": 0
-    }
-  },
-  "cordova": {}
+  "appId": "com.epam.messenger",
+  "appName": "Messenger",
+  "linuxAndroidStudioPath": "/home/maksim/.local/share/JetBrains/Toolbox/apps/AndroidStudio/ch-0/192.6392135/bin/studio.sh"
 }
