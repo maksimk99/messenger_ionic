@@ -1,7 +1,7 @@
 import {Component, ElementRef, OnInit, ViewChild} from '@angular/core';
 import {ActivatedRoute, Router} from "@angular/router";
-import {ChatService} from "../chat.service";
-import {Chat, User} from "./chat.model";
+import {ChatService} from "../../services/chat.service";
+import {Chat, User} from "../../models/chat.model";
 import {IonContent} from "@ionic/angular";
 import {Content} from "@angular/compiler/src/render3/r3_ast";
 

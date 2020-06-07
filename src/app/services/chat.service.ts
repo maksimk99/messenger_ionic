@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import {ChatPreview} from "./chat-preview.model";
-import {Chat} from "./chat/chat.model";
+import {ChatPreview} from "../models/chat-preview.model";
+import {Chat} from "../models/chat.model";
 
 @Injectable({
   providedIn: 'root'
@@ -155,5 +155,15 @@ export class ChatService {
 
   setLastReadMessages(messageId: string) {
     this.chat.lastReadMessageId = messageId;
+  }
+
+  findChatWithUserById(userId: string): string {
+    //TODO select all dialogs(2 participants) and find one where user with provided id participate in otherwise return null
+    return 'r1';
+  }
+
+  createChatWithUser(userId: string) {
+    //TODO create chat and return generated id
+    return 'r1';
   }
 }

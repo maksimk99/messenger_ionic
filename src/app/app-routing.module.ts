@@ -10,6 +10,10 @@ const routes: Routes = [
     path: '',
     redirectTo: 'chats',
     pathMatch: 'full'
+  },
+  {
+    path: 'contacts',
+    loadChildren: () => import('./contacts/contacts.module').then( m => m.ContactsPageModule)
   }
 ];
 

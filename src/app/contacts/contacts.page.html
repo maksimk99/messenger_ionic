@@ -1,0 +1,33 @@
+<ion-header>
+  <ion-toolbar color="primary" *ngIf="!isSearchActive">
+    <ion-buttons slot="start">
+      <ion-back-button icon="arrow-back" text="" defaultHref="/chats"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Contacts</ion-title>
+    <ion-buttons slot="end" (click)="activateSearch()">
+      <ion-button>
+        <ion-icon slot="icon-only" name="search"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+  <ion-toolbar color="primary" *ngIf="isSearchActive">
+    <ion-buttons slot="start">
+      <ion-button (click)="deActivateSearch()">
+        <ion-icon slot="icon-only" name="arrow-back"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-searchbar id="contactsSearchBar"  placeholder="Search" [(ngModel)]="searchString" (ionChange)="findContacts()"></ion-searchbar>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-list>
+    <app-contact [contact]="contact" (click)="openChatWithContact(contact.id)" *ngFor="let contact of contacts"></app-contact>
+  </ion-list>
+
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+    <ion-fab-button [routerLink]="['/contacts/add']">
+      <ion-icon name="add"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+</ion-content>

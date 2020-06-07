@@ -1,6 +1,6 @@
 import {Component, OnInit} from '@angular/core';
-import {ChatPreview} from "./chat-preview.model";
-import {ChatService} from "./chat.service";
+import {ChatPreview} from "../models/chat-preview.model";
+import {ChatService} from "../services/chat.service";
 import {formatDate} from "@angular/common";
 
 @Component({
