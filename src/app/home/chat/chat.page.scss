@@ -1,0 +1,18 @@
+.chat-footer {
+  padding-left: 3px;
+}
+
+.send-button {
+  margin-top: auto;
+  padding-left: 7px;
+  pointer-events: visible !important;
+
+  ion-icon {
+    width: 25px;
+    height: 25px;
+  }
+}
+
+.send-button-icon {
+  color: #6c6868;
+}

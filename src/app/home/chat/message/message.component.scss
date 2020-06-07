@@ -1,0 +1,33 @@
+.chat-message {
+  width: auto;
+  max-width: 90%;
+  min-width: 25%;
+  border-radius: 12px;
+  clear: both;
+}
+
+.chat-message-dialog {
+  padding-left: 1%;
+  padding-right: 1%;
+}
+
+.chat-message-row {
+  padding-bottom: 1%;
+}
+
+.chat-message-row-new-sender {
+  padding-top: 1%;
+}
+
+.message-text {
+  white-space: pre-line!important;
+}
+
+.unreadMessagesColor {
+  margin-top: 5px;
+  margin-bottom: 5px;
+  border-radius: 20px;
+  --background: #5f5e5e;
+  --border-color: #070707;
+  --min-height: 30px;
+}

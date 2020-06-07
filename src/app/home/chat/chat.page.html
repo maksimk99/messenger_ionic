@@ -1,0 +1,39 @@
+<ion-header>
+    <ion-toolbar color="primary">
+        <ion-buttons slot="start" class="ion-margin-horizontal">
+            <ion-back-button icon="arrow-back" text="" defaultHref="/chats"></ion-back-button>
+        </ion-buttons>
+        <ion-avatar slot="start">
+            <ion-img [src]="chat.avatarUrl">{{chat.name}}</ion-img>
+        </ion-avatar>
+        <ion-title [textContent]="chat.name"></ion-title>
+    </ion-toolbar>
+</ion-header>
+
+<ion-content #scrollElement [scrollEvents]="true" (ionScroll)="logScrolling($event)" >
+    <ion-list #scrollList>
+        <app-message  [message]="message" [sender]="getSenderInfo(message.senderId)"
+                     [isGroupChat]="chat.participants.length > 2" [isCurrentUser]="message.senderId === currentUserId"
+                     [previousMessage]="i !== 0 ? chat.messages[i-1] : null"
+                     [lastReadMessageId]="chat.lastReadMessageId"
+                     *ngFor="let message of chat.messages; let i = index;">
+        </app-message>
+    </ion-list>
+    <div id="unreadMessages"></div>
+</ion-content>
+
+<ion-footer>
+    <ion-toolbar class="chat-footer">
+        <ion-item>
+            <ion-textarea type="text" auto-grow rows="1" placeholder="Type message..."
+                          spellcheck="true" autoComplete="true" autocorrect="true"
+                          [(ngModel)]="enteredMessage"></ion-textarea>
+            <ion-label class="ion-float-right send-button" (click)="sendMessage()">
+                <ion-icon class="send-button-icon" slot="icon-only" name="send"
+                           [ngClass]="{'send-button-icon': enteredMessage.trim().length === 0}"></ion-icon>
+            </ion-label>
+        </ion-item>
+    </ion-toolbar>
+</ion-footer>
+
+
