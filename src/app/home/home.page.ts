@@ -2,6 +2,7 @@ import {Component, OnInit} from '@angular/core';
 import {ChatPreview} from "../models/chat-preview.model";
 import {ChatService} from "../services/chat.service";
 import {formatDate} from "@angular/common";
+import {CurrentUser} from "../models/current-user.model";
 
 @Component({
     selector: 'app-home',
@@ -10,14 +11,33 @@ import {formatDate} from "@angular/common";
 })
 export class HomePage implements OnInit {
     chats: ChatPreview[];
-    currentUserId: string;
+    currentUser: CurrentUser;
+    searchString: string;
+    isSearchActive: boolean = false;
 
     constructor(private chatService: ChatService) {
     }
 
     ngOnInit() {
         this.chats = this.chatService.getAllChats();
-        this.currentUserId = this.chatService.gerCurrentUserId();
+        this.currentUser = this.chatService.getCurrentUser();
+    }
+
+    ionViewWillLeave() {
+        this.deActivateSearch();
+    }
+
+    activateSearch() {
+        this.isSearchActive = true;
+    }
+
+    deActivateSearch() {
+        this.isSearchActive = false;
+        this.chats = this.chatService.getAllChats();
+    }
+
+    findChats() {
+        this.chats = this.chatService.findChatsByName(this.searchString);
     }
 
     deleteChat(chatId: string) {
@@ -25,7 +45,7 @@ export class HomePage implements OnInit {
     }
 
     lastMessageSenderName(chatPreview: ChatPreview): string {
-        return this.currentUserId == chatPreview.lastMessageSenderId ? "Me: " : chatPreview.lastMessageSenderName + ": ";
+        return this.currentUser.id == chatPreview.lastMessageSenderId ? "Me: " : chatPreview.lastMessageSenderName + ": ";
     }
 
     lastMessageDate(date: Date): string {

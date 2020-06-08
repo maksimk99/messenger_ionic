@@ -32,7 +32,7 @@ export class ChatPage implements OnInit {
       }
       const chatId = paramMap.get('chatId');
       this.chat = this.chatService.getChatById(chatId);
-      this.currentUserId = this.chatService.gerCurrentUserId();
+      this.currentUserId = this.chatService.getCurrentUserId();
     })
   }
 

@@ -1,49 +1,85 @@
-<ion-header [translucent]="true">
-    <ion-toolbar color="primary">
-        <ion-buttons slot="start">
-            <ion-menu-button auto-hide="false"></ion-menu-button>
-        </ion-buttons>
-        <ion-title>Messenger</ion-title>
-        <ion-buttons slot="end">
-            <ion-button>
-                <ion-icon slot="icon-only" name="search"></ion-icon>
-            </ion-button>
-        </ion-buttons>
-    </ion-toolbar>
-</ion-header>
-
-<ion-content [fullscreen]="true">
-    <ion-list>
-        <ion-item-sliding *ngFor="let chat of chats">
-            <ion-item detail="false" [routerLink]="['/chats', chat.id]">
-                <ion-avatar slot="start">
-                    <ion-img [src]="chat.imageUrl"></ion-img>
-                </ion-avatar>
-                <ion-label>
-                    <h2>{{chat.name}}</h2>
-                    <p>{{lastMessageSenderName(chat) + chat.lastMessageText}}</p>
-                </ion-label>
-                <div slot="end" class="lastSection ion-no-margin">
-                    <ion-note>{{lastMessageDate(chat.lastMessageDate)}}</ion-note>
-                    <ion-badge class="userBadge">{{chat.unreadMessages}}</ion-badge>
-<!--                    <ion-note *ngIf="chat.badge || !chat.time" class="sendTime">{{chat.sendTime}}</ion-note>-->
-<!--                    <ion-badge slot="end" class="userBadge" *ngIf="chat.badge">{{chat.badge}}</ion-badge>-->
-<!--                    <ion-note slot="end" *ngIf="chat.time">{{chat.time}}</ion-note>-->
-                </div>
-<!--                <ion-note>{{lastMessageDate(chat.lastMessageDate)}}</ion-note>-->
-<!--                <ion-badge slot="end">{{chat.unreadMessages}}</ion-badge>-->
+<ion-menu side="start" content-id="main-content">
+    <ion-header>
+        <ion-toolbar  color="primary">
+            <ion-avatar class="ion-margin-top ion-margin-start">
+                <ion-img [src]="currentUser.avatarUrl"></ion-img>
+            </ion-avatar>
+            <ion-title class="ion-padding">
+                <p class="ion-no-margin" [textContent]="currentUser.name"></p>
+                <p class="ion-no-margin" [textContent]="currentUser.phoneNumber"></p>
+            </ion-title>
+        </ion-toolbar>
+    </ion-header>
+    <ion-content>
+        <ion-list>
+            <ion-item>
+                <ion-icon name="people" slot="start"></ion-icon>
+                <ion-label>New Group</ion-label>
             </ion-item>
-            <ion-item-options side="end">
-                <ion-item-option (click)="deleteChat(chat.id)" color="danger">
-                    <ion-icon slot="icon-only" name="trash"></ion-icon>
-                </ion-item-option>
-            </ion-item-options>
-        </ion-item-sliding>
-    </ion-list>
+            <ion-item [routerLink]="['/contacts']">
+                <ion-icon name="person" slot="start"></ion-icon>
+                <ion-label>Contacts</ion-label>
+            </ion-item>
+            <ion-item>
+                <ion-icon name="settings" slot="start"></ion-icon>
+                <ion-label>Profile</ion-label>
+            </ion-item>
+        </ion-list>
+    </ion-content>
+</ion-menu>
 
-    <ion-fab vertical="bottom" horizontal="end" slot="fixed">
-        <ion-fab-button [routerLink]="['/contacts']">
-            <ion-icon name="chatbox-ellipses"></ion-icon>
-        </ion-fab-button>
-    </ion-fab>
-</ion-content>
+<div class="ion-page" id="main-content">
+    <ion-header [translucent]="true">
+        <ion-toolbar color="primary" *ngIf="!isSearchActive">
+            <ion-buttons slot="start">
+                <ion-menu-button auto-hide="false"></ion-menu-button>
+            </ion-buttons>
+            <ion-title>Messenger</ion-title>
+            <ion-buttons slot="end" (click)="activateSearch()">
+                <ion-button>
+                    <ion-icon slot="icon-only" name="search"></ion-icon>
+                </ion-button>
+            </ion-buttons>
+        </ion-toolbar>
+        <ion-toolbar color="primary" *ngIf="isSearchActive">
+            <ion-buttons slot="start">
+                <ion-button (click)="deActivateSearch()">
+                    <ion-icon slot="icon-only" name="arrow-back"></ion-icon>
+                </ion-button>
+            </ion-buttons>
+            <ion-searchbar id="contactsSearchBar"  placeholder="Search" [(ngModel)]="searchString"
+                           (ionChange)="findChats()"></ion-searchbar>
+        </ion-toolbar>
+    </ion-header>
+
+    <ion-content [fullscreen]="true">
+        <ion-list>
+            <ion-item-sliding *ngFor="let chat of chats">
+                <ion-item detail="false" [routerLink]="['/chats', chat.id]">
+                    <ion-avatar slot="start">
+                        <ion-img [src]="chat.imageUrl"></ion-img>
+                    </ion-avatar>
+                    <ion-label>
+                        <h2>{{chat.name}}</h2>
+                        <p>{{lastMessageSenderName(chat) + chat.lastMessageText}}</p>
+                    </ion-label>
+                    <div slot="end" class="lastSection ion-no-margin">
+                        <ion-note>{{lastMessageDate(chat.lastMessageDate)}}</ion-note>
+                        <ion-badge class="userBadge">{{chat.unreadMessages}}</ion-badge>
+                    </div>
+                </ion-item>
+                <ion-item-options side="end">
+                    <ion-item-option (click)="deleteChat(chat.id)" color="danger">
+                        <ion-icon slot="icon-only" name="trash"></ion-icon>
+                    </ion-item-option>
+                </ion-item-options>
+            </ion-item-sliding>
+        </ion-list>
+
+        <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+            <ion-fab-button [routerLink]="['/contacts']">
+                <ion-icon name="chatbox-ellipses"></ion-icon>
+            </ion-fab-button>
+        </ion-fab>
+    </ion-content>
+</div>
