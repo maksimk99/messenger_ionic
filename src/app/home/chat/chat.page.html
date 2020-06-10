@@ -1,19 +1,19 @@
 <ion-header>
     <ion-toolbar color="primary">
-        <ion-buttons slot="start" class="ion-margin-horizontal">
+        <ion-buttons slot="start" class="ion-margin-end">
             <ion-back-button icon="arrow-back" text="" defaultHref="/chats"></ion-back-button>
         </ion-buttons>
         <ion-avatar slot="start">
-            <ion-img [src]="chat.avatarUrl">{{chat.name}}</ion-img>
+            <ion-img [src]="chat.avatarUrl"></ion-img>
         </ion-avatar>
-        <ion-title [textContent]="chat.name"></ion-title>
+        <ion-title slot="start" [textContent]="chat.name"></ion-title>
     </ion-toolbar>
 </ion-header>
 
 <ion-content #scrollElement [scrollEvents]="true" (ionScroll)="logScrolling($event)" >
     <ion-list #scrollList>
         <app-message  [message]="message" [sender]="getSenderInfo(message.senderId)"
-                     [isGroupChat]="chat.participants.length > 2" [isCurrentUser]="message.senderId === currentUserId"
+                     [isGroupChat]="chat.participants.length > 2" [isCurrentUser]="message.senderId === currentUser.id"
                      [previousMessage]="i !== 0 ? chat.messages[i-1] : null"
                      [lastReadMessageId]="chat.lastReadMessageId"
                      *ngFor="let message of chat.messages; let i = index;">

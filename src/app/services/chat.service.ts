@@ -1,7 +1,7 @@
 import {Injectable} from '@angular/core';
 import {ChatPreview} from "../models/chat-preview.model";
-import {Chat, User} from "../models/chat.model";
-import {CurrentUser} from "../models/current-user.model";
+import {Chat} from "../models/chat.model";
+import {UserService} from "./user.service";
 
 @Injectable({
   providedIn: 'root'
@@ -133,16 +133,7 @@ export class ChatService {
     lastReadMessageId: 'message2'
   }
 
-  private currentUser: CurrentUser = {
-      id: 'user2',
-      name: 'Maksim Koturanov',
-      phoneNumber: '+375 (33) 664-87-14',
-      avatarUrl: 'https://pickaface.net/gallery/avatar/20151205_194059_2696_Chat.png',
-      password: 'password'
-  }
-
-
-      constructor() { }
+  constructor() { }
 
   getAllChats() {
     return [...this.chatsPreview];
@@ -156,18 +147,10 @@ export class ChatService {
     return [...this.chatsPreview.filter(chatPreview => chatPreview.name.toLowerCase().match("^" + name.toLowerCase() + ".*"))];
   }
 
-  sendMessage(vMessage:string) {
-    this.chat.messages.push({id: 'message' + this.messageId,senderId: this.currentUser.id, time: new Date(), message: vMessage })
+  sendMessage(vMessage:string, currentUserId: string) {
+    this.chat.messages.push({id: 'message' + this.messageId,senderId: currentUserId, time: new Date(), message: vMessage })
     this.messageId++;
     console.log("message is on the way")
-  }
-
-  getCurrentUserId() {
-    return this.currentUser.id;
-  }
-
-  getCurrentUser() {
-      return this.currentUser;
   }
 
   setLastReadMessages(messageId: string) {

@@ -4,6 +4,8 @@ import {ChatService} from "../../services/chat.service";
 import {Chat, User} from "../../models/chat.model";
 import {IonContent} from "@ionic/angular";
 import {Content} from "@angular/compiler/src/render3/r3_ast";
+import {UserService} from "../../services/user.service";
+import {CurrentUser} from "../../models/current-user.model";
 
 @Component({
   selector: 'app-chat',
@@ -16,13 +18,14 @@ export class ChatPage implements OnInit {
   @ViewChild('scrollList', {read: ElementRef}) chatList: ElementRef;
 
   chat: Chat;
-  currentUserId: string;
+  currentUser: CurrentUser;
   enteredMessage: string = "";
   isCurrentUserSentMessage: boolean = false;
 
   private mutationObserver: MutationObserver;
 
-  constructor(private activatedRoute: ActivatedRoute, private router: Router, private chatService: ChatService) { }
+  constructor(private activatedRoute: ActivatedRoute, private router: Router, private chatService: ChatService,
+              private userService: UserService) { }
 
   ngOnInit() {
     this.activatedRoute.paramMap.subscribe(paramMap => {
@@ -32,7 +35,7 @@ export class ChatPage implements OnInit {
       }
       const chatId = paramMap.get('chatId');
       this.chat = this.chatService.getChatById(chatId);
-      this.currentUserId = this.chatService.getCurrentUserId();
+      this.currentUser = this.userService.getCurrentUser();
     })
   }
 
@@ -58,13 +61,17 @@ export class ChatPage implements OnInit {
   sendMessage() {
     if (this.enteredMessage.trim().length > 0) {
       this.isCurrentUserSentMessage = true;
-      this.chatService.sendMessage(this.enteredMessage);
+      this.chatService.sendMessage(this.enteredMessage, this.currentUser.id);
       this.enteredMessage = "";
     }
   }
 
   getSenderInfo(senderId: string): User {
-    return this.chat.participants.find(participant => participant.id === senderId)
+    if (senderId === this.currentUser.id) {
+      return this.currentUser;
+    } else {
+      return this.chat.participants.find(participant => participant.id === senderId)
+    }
   }
 
   logScrolling(event) {

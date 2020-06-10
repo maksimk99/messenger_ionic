@@ -1,0 +1,43 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start" class="ion-margin-right">
+      <ion-back-button icon="arrow-back" text="" defaultHref="/chats"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Profile</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="submitChanges()" fill="solid" color="secondary"
+                  [disabled]="!cameraPhoto && user.name === userName || userName.trim().length ===0">Submit</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-img [src]="user.avatarUrl" class="profileImage"></ion-img>
+  <ion-fab vertical="top" horizontal="end" slot="fixed">
+    <ion-fab-button>
+      <ion-icon name="pencil"></ion-icon>
+    </ion-fab-button>
+    <ion-fab-list side="bottom">
+      <ion-fab-button (click)="takePictureFromGallery()">
+        <ion-icon name="image"></ion-icon>
+      </ion-fab-button>
+      <ion-fab-button (click)="takePictureByCamera()">
+        <ion-icon name="camera"></ion-icon>
+      </ion-fab-button>
+    </ion-fab-list>
+  </ion-fab>
+  <ion-list>
+    <ion-item>
+      <ion-title class="ion-no-padding">
+        <h2>User name:</h2>
+        <ion-input [(ngModel)]="userName"></ion-input>
+      </ion-title>
+    </ion-item>
+    <ion-item>
+      <ion-title class="ion-no-padding">
+        <h2>Phone number:</h2>
+        <h5 [textContent]="user.phoneNumber"></h5>
+      </ion-title>
+    </ion-item>
+  </ion-list>
+</ion-content>

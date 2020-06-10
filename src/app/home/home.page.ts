@@ -3,6 +3,7 @@ import {ChatPreview} from "../models/chat-preview.model";
 import {ChatService} from "../services/chat.service";
 import {formatDate} from "@angular/common";
 import {CurrentUser} from "../models/current-user.model";
+import {UserService} from "../services/user.service";
 
 @Component({
     selector: 'app-home',
@@ -15,12 +16,12 @@ export class HomePage implements OnInit {
     searchString: string;
     isSearchActive: boolean = false;
 
-    constructor(private chatService: ChatService) {
+    constructor(private chatService: ChatService, private userService: UserService) {
     }
 
     ngOnInit() {
         this.chats = this.chatService.getAllChats();
-        this.currentUser = this.chatService.getCurrentUser();
+        this.currentUser = this.userService.getCurrentUser();
     }
 
     ionViewWillLeave() {
