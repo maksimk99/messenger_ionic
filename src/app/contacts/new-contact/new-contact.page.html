@@ -1,0 +1,45 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button icon="arrow-back" text="" defaultHref="/contacts"></ion-back-button>
+    </ion-buttons>
+    <ion-title slot="start">Add new contact</ion-title>
+    <ion-buttons slot="end">
+      <ion-button [disabled]="phoneForm.invalid" (click)="onSubmit()">
+        <ion-icon slot="icon-only" name="checkmark" [color]="!phoneForm.valid ? 'danger' : 'success'"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <ion-text class="h5 ion-no-padding phoneNumberTitle">Phone number:</ion-text>
+  <form #f="ngForm" [formGroup]="phoneForm">
+    <div class="ion-margin-bottom">
+      <ngx-intl-tel-input
+              [inputId]="'adsasd'"
+              [cssClass]="'custom'"
+              [preferredCountries]="preferredCountries"
+              [enableAutoCountrySelect]="true"
+              [enablePlaceholder]="true"
+              [searchCountryFlag]="true"
+              [searchCountryField]="[SearchCountryField.Iso2, SearchCountryField.Name]"
+              [selectFirstCountry]="false"
+              [selectedCountryISO]="CountryISO.Belarus"
+              [tooltipField]="TooltipLabel.Name"
+              [phoneValidation]="true"
+              [separateDialCode]="true"
+              (countryChange)="phoneForm.reset()"
+              name="phone" formControlName="phone">
+      </ngx-intl-tel-input>
+    </div>
+  </form>
+  <ion-text color="primary" class="ion-no-margin">
+    <h5 class="ion-no-margin">
+      * a contact will be added only if he has
+      an account, otherwise you will have to
+      ask him to install the application and
+      create an account to start chatting.
+    </h5>
+  </ion-text>
+</ion-content>

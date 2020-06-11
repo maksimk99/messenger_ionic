@@ -7,6 +7,10 @@ const routes: Routes = [
   {
     path: '',
     component: ContactsPage
+  },
+  {
+    path: 'add',
+    loadChildren: () => import('./new-contact/new-contact.module').then( m => m.NewContactPageModule)
   }
 ];
 

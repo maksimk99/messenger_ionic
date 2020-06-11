@@ -54,4 +54,9 @@ export class ContactsService {
   findContactsByName(name: string) {
     return [...this.contacts.filter(contact => contact.name.toLowerCase().match("^" + name.toLowerCase() + ".*"))];
   }
+
+  addNewContact(phoneNumber: string) {
+    //TODO send query to server to get user by phone number
+    return false;
+  }
 }
