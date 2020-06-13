@@ -1,0 +1,24 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button icon="arrow-back" text="" defaultHref="/chats"></ion-back-button>
+    </ion-buttons>
+    <ion-title>New Group</ion-title>
+    <ion-buttons slot="end">
+      <ion-button [disabled]="selectedContacts.length < 2" (click)="submitSelected()">
+        <ion-icon slot="icon-only" name="checkmark" [color]="selectedContacts.length < 2 ? 'danger' : 'success'"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+  <ion-toolbar class="ion-no-padding">
+    <ion-searchbar class="contactsSearchBar" animated placeholder="Find contact..." (ionChange)="findContacts()" [(ngModel)]="searchString"></ion-searchbar>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-list>
+    <app-contact [contact]="contact" [selected]="selectedContacts.indexOf(contact) !== -1"
+                 (click)="selectedContacts.indexOf(contact) === -1 ? addContactToChat(contact) : removeContactFromChat(contact.id)"
+                 *ngFor="let contact of contacts"></app-contact>
+  </ion-list>
+</ion-content>

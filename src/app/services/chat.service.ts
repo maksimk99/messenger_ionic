@@ -2,6 +2,7 @@ import {Injectable} from '@angular/core';
 import {ChatPreview} from "../models/chat-preview.model";
 import {Chat} from "../models/chat.model";
 import {UserService} from "./user.service";
+import {Contact} from "../models/contact.model";
 
 @Injectable({
   providedIn: 'root'
@@ -133,7 +134,7 @@ export class ChatService {
     lastReadMessageId: 'message2'
   }
 
-  constructor() { }
+  constructor(private userService: UserService) { }
 
   getAllChats() {
     return [...this.chatsPreview];
@@ -165,5 +166,14 @@ export class ChatService {
   createChatWithUser(userId: string) {
     //TODO create chat and return generated id
     return 'r1';
+  }
+
+  createNewGroup(members: Contact[], groupName: string, groupImageUrl: string) {
+    if (groupImageUrl === null) {
+      groupImageUrl = 'assets/icon/group.png';
+    }
+    let membersId: string[] = members.map(member => member.id);
+    membersId.push(this.userService.getCurrentUser().id)
+    //TODO send to server
   }
 }

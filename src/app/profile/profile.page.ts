@@ -1,23 +1,9 @@
 import {Component, OnInit} from '@angular/core';
-import {CameraOptions, CameraPhoto, CameraResultType, CameraSource, Plugins} from '@capacitor/core';
+import {CameraPhoto} from '@capacitor/core';
 import {UserService} from "../services/user.service";
 import {CurrentUser} from "../models/current-user.model";
-import {ChatService} from "../services/chat.service";
 import {Router} from "@angular/router";
-
-const cameraOptions: CameraOptions = {
-  quality: 100,
-  allowEditing: false,
-  resultType: CameraResultType.Uri,
-  source: CameraSource.Camera
-}
-
-const galleryOptions: CameraOptions = {
-  quality: 100,
-  allowEditing: false,
-  resultType: CameraResultType.Uri,
-  source: CameraSource.Photos
-}
+import {CameraService} from "../services/camera.service";
 
 @Component({
   selector: 'app-profile',
@@ -30,7 +16,7 @@ export class ProfilePage implements OnInit {
   cameraPhoto: CameraPhoto;
   userName: string;
 
-  constructor(private userService: UserService, private router: Router) { }
+  constructor(private userService: UserService, private router: Router, private cameraService: CameraService) { }
 
   ngOnInit() {
     this.user = this.userService.getCurrentUser();
@@ -38,15 +24,15 @@ export class ProfilePage implements OnInit {
   }
 
   async takePictureByCamera() {
-    await this.takePicture(cameraOptions);
+    this.cameraService.takePictureByCamera().then(image => {
+          this.cameraPhoto = image;
+          this.user.avatarUrl = image.webPath;
+        }
+    );
   }
 
   async takePictureFromGallery() {
-    await this.takePicture(galleryOptions);
-  }
-
-  async takePicture(cameraOptions: CameraOptions) {
-    Plugins.Camera.getPhoto(cameraOptions).then(image => {
+    this.cameraService.takePictureFromGallery().then(image => {
           this.cameraPhoto = image;
           this.user.avatarUrl = image.webPath;
         }

@@ -18,6 +18,10 @@ const routes: Routes = [
   {
     path: 'profile',
     loadChildren: () => import('./profile/profile.module').then( m => m.ProfilePageModule)
+  },
+  {
+    path: 'groupChatCreate',
+    loadChildren: () => import('./group-chat/group-chat.module').then( m => m.GroupChatPageModule)
   }
 ];
 

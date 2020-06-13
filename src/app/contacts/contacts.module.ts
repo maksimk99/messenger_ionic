@@ -10,12 +10,15 @@ import { ContactsPage } from './contacts.page';
 import {ContactComponent} from "./contact/contact.component";
 
 @NgModule({
-  imports: [
-    CommonModule,
-    FormsModule,
-    IonicModule,
-    ContactsPageRoutingModule
-  ],
-  declarations: [ContactsPage, ContactComponent]
+    imports: [
+        CommonModule,
+        FormsModule,
+        IonicModule,
+        ContactsPageRoutingModule
+    ],
+    exports: [
+        ContactComponent
+    ],
+    declarations: [ContactsPage, ContactComponent]
 })
 export class ContactsPageModule {}

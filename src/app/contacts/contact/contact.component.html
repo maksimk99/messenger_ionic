@@ -6,4 +6,9 @@
     <h2>{{contact.name}}</h2>
     <p>{{lastSeenFormat(contact.lastSeen)}}</p>
   </ion-label>
+  <ion-buttons slot="end" *ngIf="selected">
+    <ion-button>
+      <ion-icon slot="icon-only" name="checkmark" color="success"></ion-icon>
+    </ion-button>
+  </ion-buttons>
 </ion-item>

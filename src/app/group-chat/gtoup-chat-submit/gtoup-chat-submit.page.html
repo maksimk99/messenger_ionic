@@ -1,0 +1,28 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button icon="arrow-back" text="" defaultHref="/chats"></ion-back-button>
+    </ion-buttons>
+    <ion-title>New Group</ion-title>
+    <ion-buttons slot="end">
+      <ion-button [disabled]="groupName == null || groupName?.trim().length === 0" (click)="submit()">
+        <ion-icon slot="icon-only" name="checkmark" [color]="groupName !== null && groupName?.trim().length > 0 ? 'success' : 'danger'"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-item>
+    <ion-avatar class="group-image" (click)="selectImageSource()">
+      <ion-img [src]="groupImageUrl"></ion-img>
+    </ion-avatar>
+    <ion-input class="ion-margin-start" placeholder="Enter group name..." [(ngModel)]="groupName"></ion-input>
+  </ion-item>
+  <ion-text color="primary">
+    <p class="ion-no-margin ion-padding-start ion-padding-top">{{selectedContacts.length}} members</p>
+  </ion-text>
+  <ion-list>
+    <app-contact [contact]="contact" *ngFor="let contact of selectedContacts"></app-contact>
+  </ion-list>
+</ion-content>

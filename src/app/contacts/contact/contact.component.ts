@@ -10,6 +10,7 @@ import {formatDate} from "@angular/common";
 export class ContactComponent {
 
   @Input() contact: Contact;
+  @Input() selected: boolean;
 
   constructor() { }
 
