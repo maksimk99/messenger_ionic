@@ -27,6 +27,11 @@ export class UserService {
     );
   }
 
+  login(loginObject) {
+    console.log('Login object: ' + JSON.stringify(loginObject))
+    return false;
+  }
+
   getCurrentUser() {
     return this.currentUser;
   }

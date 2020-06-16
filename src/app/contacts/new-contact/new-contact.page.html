@@ -32,6 +32,12 @@
               (countryChange)="phoneForm.reset()"
               name="phone" formControlName="phone">
       </ngx-intl-tel-input>
+      <ion-item *ngIf="f.form.controls['phone'].invalid && !f.form.controls['phone'].errors['required']">
+        <p class="error-text">Phone name is invalid</p>
+      </ion-item>
+      <ion-item *ngIf="f.form.controls['phone'].errors['required']">
+        <p class="error-text">Phone name is required</p>
+      </ion-item>
     </div>
   </form>
   <ion-text color="primary" class="ion-no-margin">
