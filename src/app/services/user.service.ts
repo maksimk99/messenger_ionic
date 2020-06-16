@@ -32,6 +32,11 @@ export class UserService {
     return false;
   }
 
+  register(registerObject) {
+    console.log('Register object: ' + JSON.stringify(registerObject))
+    return true;
+  }
+
   getCurrentUser() {
     return this.currentUser;
   }
