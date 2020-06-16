@@ -1,0 +1,47 @@
+<ion-content class="ion-padding">
+  <h3 class="display-4 ion-text-center messengerTitle">Messenger</h3>
+  <form [formGroup]="registerForm" (ngSubmit)="register()">
+    <div class="ion-margin-bottom ion-text-center">
+      <ngx-intl-tel-input
+              [inputId]="'adsasd'"
+              [cssClass]="'custom'"
+              [preferredCountries]="preferredCountries"
+              [enablePlaceholder]="true"
+              [searchCountryFlag]="true"
+              [searchCountryField]="[SearchCountryField.Iso2, SearchCountryField.Name]"
+              [selectFirstCountry]="false"
+              [selectedCountryISO]="CountryISO.Belarus"
+              [tooltipField]="TooltipLabel.Name"
+              [phoneValidation]="true"
+              [separateDialCode]="true"
+              (countryChange)="registerForm.reset()"
+              formControlName="phone">
+      </ngx-intl-tel-input>
+
+      <ion-text class="ion-text-left" *ngIf="registerForm.controls['phone'].invalid && !registerForm.controls['phone'].errors?.required">
+        <div class="ion-no-margin ion-margin-top ion-margin-start">
+          <ion-icon size="small" color="danger" name="information-circle-outline" class="ion-float-left"></ion-icon>
+          <p class="error-text ion-no-margin">Phone number is invalid</p>
+        </div>
+      </ion-text>
+      <ion-text class="ion-text-left ion-margin-top ion-margin-start" *ngIf="registerForm.controls['phone'].errors?.required">
+        <div class="ion-no-margin ion-margin-top ion-margin-start">
+          <ion-icon size="small" color="danger" name="information-circle-outline" class="ion-float-left"></ion-icon>
+          <p class="error-text ion-no-margin">Phone number is required</p>
+        </div>
+      </ion-text>
+
+      <ion-item>
+        <ion-label position="floating">User name:</ion-label>
+        <ion-input class="custom-form-input" formControlName="userName" type="text"></ion-input>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="floating">Password:</ion-label>
+        <ion-input class="custom-form-input" formControlName="password" type="password"></ion-input>
+      </ion-item>
+    </div>
+  </form>
+  <ion-button color="secondary" expand="block" [disabled]="registerForm.invalid" (click)="register()">Register</ion-button>
+  <ion-button color="success" expand="block" [routerLink]="['/login']">Log in</ion-button>
+</ion-content>
