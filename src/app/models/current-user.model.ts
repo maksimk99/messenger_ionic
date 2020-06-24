@@ -1,5 +1,5 @@
 export interface CurrentUser {
-    id: string,
+    id: number,
     name: string,
     phoneNumber: string,
     avatarUrl: string,

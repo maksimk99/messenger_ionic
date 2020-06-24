@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import {FormBuilder, FormControl, FormGroup, Validators} from "@angular/forms";
 import {CountryISO, SearchCountryField, TooltipLabel} from 'ngx-intl-tel-input';
-import {ContactsService} from "../services/contacts.service";
 import {AlertController} from "@ionic/angular";
 import {Router} from "@angular/router";
 import {UserService} from "../services/user.service";
@@ -19,9 +18,8 @@ export class LoginPage implements OnInit {
   preferredCountries: CountryISO[] = [CountryISO.Belarus, CountryISO.Russia];
   loginForm: FormGroup;
 
-  constructor(private contactsService: ContactsService, private userService: UserService,
-              private alertController: AlertController, private router: Router,
-              private formBuilder: FormBuilder) {
+  constructor(private userService: UserService, private alertController: AlertController,
+              private router: Router, private formBuilder: FormBuilder) {
     this.loginForm = formBuilder.group({
       phone: ['', Validators.required],
       password: ['', Validators.compose([Validators.minLength(5), Validators.maxLength(30), Validators.required])]
@@ -40,6 +38,8 @@ export class LoginPage implements OnInit {
     )
     if (!response) {
       this.presentAlert()
+    } else {
+      this.router.navigate(['/chats']);
     }
   }
 

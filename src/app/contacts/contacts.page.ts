@@ -19,7 +19,9 @@ export class ContactsPage implements OnInit {
               private router: Router) { }
 
   ngOnInit() {
-    this.contacts = this.contactsService.getContacts();
+    this.contactsService.getContacts().subscribe(contacts => {
+      this.contacts = contacts;
+    });
   }
 
   activateSearch() {
@@ -28,19 +30,23 @@ export class ContactsPage implements OnInit {
 
   deActivateSearch() {
     this.isSearchActive = false;
-    this.contacts = this.contactsService.getContacts();
+    this.contactsService.getContacts().subscribe(contacts => {
+      this.contacts = contacts;
+    });
   }
 
-  findContacts() {
-    this.contacts = this.contactsService.findContactsByName(this.searchString);
+  async findContacts() {
+    this.contacts = await this.contactsService.findContactsByName(this.searchString);
   }
 
-  openChatWithContact(contactId: string) {
-    console.log('contact id: ' + contactId);
-    let chatId: string = this.chatService.findChatWithUserById(contactId);
-    if (chatId === null) {
-      chatId = this.chatService.createChatWithUser(contactId);
-    }
-    this.router.navigate(['/chats/', chatId])
+  openChatWithContact(contactId: number) {
+    this.chatService.findChatWithUserById(contactId).then(chatId => {
+      if (chatId !== null) {
+        this.router.navigate(['/chats/', chatId])
+      } else {
+        let contact = this.contacts.find(contact => contact.id === contactId);
+        this.chatService.createChatWithUser(contact).then(chatId => this.router.navigate(['/chats/', chatId]));
+      }
+    });
   }
 }

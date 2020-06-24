@@ -14,19 +14,21 @@ export class ProfilePage implements OnInit {
 
   user: CurrentUser;
   cameraPhoto: CameraPhoto;
+  imageUrl: string;
   userName: string;
 
   constructor(private userService: UserService, private router: Router, private cameraService: CameraService) { }
 
   ngOnInit() {
-    this.user = this.userService.getCurrentUser();
+    this.userService.getCurrentUser().subscribe(user => this.user = user);
     this.userName = this.user.name;
+    this.imageUrl = this.user.avatarUrl;
   }
 
   async takePictureByCamera() {
     this.cameraService.takePictureByCamera().then(image => {
           this.cameraPhoto = image;
-          this.user.avatarUrl = image.webPath;
+          this.imageUrl = image.webPath;
         }
     );
   }
@@ -34,7 +36,7 @@ export class ProfilePage implements OnInit {
   async takePictureFromGallery() {
     this.cameraService.takePictureFromGallery().then(image => {
           this.cameraPhoto = image;
-          this.user.avatarUrl = image.webPath;
+          this.imageUrl = image.webPath;
         }
     );
   }

@@ -1,5 +1,5 @@
 export interface Contact {
-    id: string,
+    id: number,
     name: string,
     avatarUrl: string,
     lastSeen: Date

@@ -22,8 +22,12 @@ export class HomePage implements OnInit {
     }
 
     ngOnInit() {
-        this.chats = this.chatService.getAllChats();
-        this.currentUser = this.userService.getCurrentUser();
+        this.chatService.getAllChats().subscribe(chats => {
+            this.chats = chats;
+        });
+        this.userService.getCurrentUser().subscribe(user => {
+            this.currentUser = user;
+        });
     }
 
     ionViewWillLeave() {
@@ -37,7 +41,9 @@ export class HomePage implements OnInit {
 
     deActivateSearch() {
         this.isSearchActive = false;
-        this.chats = this.chatService.getAllChats();
+        this.chatService.getAllChats().subscribe(chats => {
+            this.chats = chats;
+        });
     }
 
     findChats() {
@@ -46,10 +52,6 @@ export class HomePage implements OnInit {
 
     deleteChat(chatId: string) {
         //delete chat, should get chat id
-    }
-
-    lastMessageSenderName(chatPreview: ChatPreview): string {
-        return this.currentUser.id == chatPreview.lastMessageSenderId ? "Me: " : chatPreview.lastMessageSenderName + ": ";
     }
 
     lastMessageDate(date: Date): string {

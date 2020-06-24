@@ -1,21 +1,21 @@
 export interface User {
-    id: string,
+    id: number,
     name: string,
     avatarUrl: string
 }
 
 export interface Message {
-    id: string,
-    senderId: string,
+    id: number,
+    senderId: number,
     message: string,
     time: Date
 }
 
 export interface Chat {
-    id: string,
+    id: number,
     name: string,
     avatarUrl: string,
     participants: User[],
     messages: Message[],
-    lastReadMessageId: string
+    lastReadMessageId: number
 }

@@ -59,15 +59,15 @@
             <ion-item-sliding *ngFor="let chat of chats">
                 <ion-item detail="false" [routerLink]="['/chats', chat.id]">
                     <ion-avatar slot="start">
-                        <ion-img [src]="chat.imageUrl"></ion-img>
+                        <ion-img [src]="chat.imageUrl ? chat.imageUrl : 'assets/icon/group.png'"></ion-img>
                     </ion-avatar>
                     <ion-label>
                         <h2>{{chat.name}}</h2>
-                        <p>{{lastMessageSenderName(chat) + chat.lastMessageText}}</p>
+                        <p *ngIf="chat.lastMessageSenderName && chat.lastMessageText">{{chat.lastMessageSenderName + ": " + chat.lastMessageText}}</p>
                     </ion-label>
                     <div slot="end" class="lastSection ion-no-margin">
-                        <ion-note>{{lastMessageDate(chat.lastMessageDate)}}</ion-note>
-                        <ion-badge class="userBadge">{{chat.unreadMessages}}</ion-badge>
+                        <ion-note *ngIf="chat.lastMessageDate">{{lastMessageDate(chat.lastMessageDate)}}</ion-note>
+                        <ion-badge class="userBadge" *ngIf="chat.unreadMessages && chat.unreadMessages > 0">{{chat.unreadMessages}}</ion-badge>
                     </div>
                 </ion-item>
                 <ion-item-options side="end">

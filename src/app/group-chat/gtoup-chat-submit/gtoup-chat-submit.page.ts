@@ -26,7 +26,6 @@ export class GtoupChatSubmitPage implements OnInit {
     this.route.queryParams.subscribe(params => {
       if (this.router.getCurrentNavigation().extras.state) {
         this.selectedContacts = this.router.getCurrentNavigation().extras.state.selectedContacts;
-        console.log(this.selectedContacts);
       }
     });
   }
@@ -61,7 +60,9 @@ export class GtoupChatSubmitPage implements OnInit {
   }
 
   submit() {
-    this.chatService.createNewGroup(this.selectedContacts, this.groupName, this.groupImageUrl);
-    this.router.navigate(['/chats']);
+    this.chatService.createNewGroup(this.selectedContacts, this.groupName, this.groupImageUrl).then(result => {
+      this.router.navigate(['/chats', result]);
+    });
+    // this.router.navigate(['/chats']);
   }
 }

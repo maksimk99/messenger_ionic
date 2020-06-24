@@ -3,7 +3,6 @@ import {ActivatedRoute, Router} from "@angular/router";
 import {ChatService} from "../../services/chat.service";
 import {Chat, User} from "../../models/chat.model";
 import {IonContent} from "@ionic/angular";
-import {Content} from "@angular/compiler/src/render3/r3_ast";
 import {UserService} from "../../services/user.service";
 import {CurrentUser} from "../../models/current-user.model";
 
@@ -34,8 +33,10 @@ export class ChatPage implements OnInit {
         return;
       }
       const chatId = paramMap.get('chatId');
-      this.chat = this.chatService.getChatById(chatId);
-      this.currentUser = this.userService.getCurrentUser();
+      this.chatService.getChatById(parseInt(chatId)).subscribe(chat => {
+        this.chat = chat;
+      });
+      this.userService.getCurrentUser().subscribe(user => this.currentUser = user);
     })
   }
 
@@ -61,13 +62,13 @@ export class ChatPage implements OnInit {
   sendMessage() {
     if (this.enteredMessage.trim().length > 0) {
       this.isCurrentUserSentMessage = true;
-      this.chatService.sendMessage(this.enteredMessage, this.currentUser.id);
+      this.chatService.sendMessage(this.enteredMessage, this.chat.id);
       this.enteredMessage = "";
     }
   }
 
-  getSenderInfo(senderId: string): User {
-    if (senderId === this.currentUser.id) {
+  getSenderInfo(senderId: number): User {
+    if (!senderId) {
       return this.currentUser;
     } else {
       return this.chat.participants.find(participant => participant.id === senderId)
@@ -75,10 +76,10 @@ export class ChatPage implements OnInit {
   }
 
   logScrolling(event) {
-    console.log("logScrolling : When Scrolling", event);
+    console.log("logScrolling: When Scrolling", event);
   }
 
-  setLastReadMessage(messageId: string) {
-    this.chatService.setLastReadMessages(messageId);
+  setLastReadMessage(messageId: number) {
+    this.chatService.setLastReadMessages(messageId, this.chat.id);
   }
 }
