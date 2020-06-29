@@ -28,7 +28,7 @@
     "@ionic/angular": "^5.0.0",
     "@ionic/pwa-elements": "^1.5.2",
     "angular-inview": "^3.1.0",
-    "bootstrap": "4.1.1",
+    "bootstrap": "4.3.1",
     "capacitor-sqlite": "^2.2.0-1",
     "google-libphonenumber": "^3.2.10",
     "intl-tel-input": "^14.1.0",
