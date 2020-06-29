@@ -1,15 +1,16 @@
-import { Injectable } from '@angular/core';
+import {Injectable} from '@angular/core';
 import {CurrentUser} from "../models/current-user.model";
-import {CameraPhoto, Capacitor, Device, Filesystem, FilesystemDirectory} from "@capacitor/core";
+import {CameraPhoto, Capacitor} from "@capacitor/core";
 import {BehaviorSubject, Observable} from "rxjs";
 import {SQLiteService} from "./database/sqlite.service";
+import {FileWriterService} from "./file-writer.service";
 
 const GET_CURRENT_USER_SQL = "SELECT * FROM user";
 const DELETE_USER_SQL = "DELETE FROM user";
 const ADD_NEW_USER_SQL = "INSERT INTO user (name, phone_number, password) VALUES (?, ?, ?)";
 const UPDATE_NEW_USER_SQL = "UPDATE user SET name = ?, avatar_url = ?";
 
-const userImageFileName: string = 'userImageFileName.jpeg';
+const USER_AVATAR_IMAGE_NAME = 'userImageFileName.jpeg';
 
 @Injectable({
   providedIn: 'root'
@@ -19,7 +20,7 @@ export class UserService {
   private currentUserId;
   private currentUser: BehaviorSubject<CurrentUser> = new BehaviorSubject<CurrentUser>(null);
 
-  constructor(private SQLiteDbService: SQLiteService) {
+  constructor(private SQLiteDbService: SQLiteService, private fileWriterService: FileWriterService) {
     this.SQLiteDbService.getDatabaseState().subscribe(rdy => {
       if (rdy) {
         this.getCurrentUserFromDB();
@@ -77,48 +78,26 @@ export class UserService {
       user.name = userName;
     }
     if (cameraPhoto != null) {
-      user.avatarUrl = await this.updateUserAvatar(cameraPhoto);
-    }
-    let values: Array<any> = [user.name, user.avatarUrl]
-    this.SQLiteDbService.run(UPDATE_NEW_USER_SQL, values).
+      this.fileWriterService.saveTemporaryImage(cameraPhoto.path).then(userAvatarUrl => {
+        this.SQLiteDbService.run(UPDATE_NEW_USER_SQL, [user.name, Capacitor.convertFileSrc(userAvatarUrl)]).
+        then(() => this.getCurrentUserFromDB());
+      });
+    } else {
+      this.SQLiteDbService.run(UPDATE_NEW_USER_SQL, [user.name, user.avatarUrl]).
       then(() => this.getCurrentUserFromDB());
+    }
   }
-
-  async updateUserAvatar(cameraPhoto: CameraPhoto) {
-    const base64Data = await this.readAsBase64(cameraPhoto);
-
-    await Filesystem.writeFile({
-      path: userImageFileName,
-      data: base64Data,
-      directory: FilesystemDirectory.Data
-    });
-
-    // Web platform only: Save the photo into the base64 field
-    return base64Data;
-  }
-
-  async getImageFromFile() {
-    const readFile = await Filesystem.readFile({
-      path: userImageFileName,
-      directory: FilesystemDirectory.Data
-    });
-    return `data:image/jpeg;base64,${readFile.data}`;
-  }
-
-  private async readAsBase64(cameraPhoto: CameraPhoto) {
-    // Fetch the photo, read as a blob, then convert to base64 format
-    const response = await fetch(cameraPhoto.webPath!);
-    const blob = await response.blob();
-
-    return await this.convertBlobToBase64(blob) as string;
-  }
-
-  convertBlobToBase64 = (blob: Blob) => new Promise((resolve, reject) => {
-    const reader = new FileReader;
-    reader.onerror = reject;
-    reader.onload = () => {
-      resolve(reader.result);
-    };
-    reader.readAsDataURL(blob);
-  });
+  //
+  // async updateUserAvatar(cameraPhoto: CameraPhoto) {
+  //   const readFile =  await Filesystem.readFile({
+  //     path: cameraPhoto.path
+  //   });
+  //
+  //   let savedFile = await Filesystem.writeFile({
+  //     path: new Date().getTime() + '.jpeg',
+  //     data: readFile.data,
+  //     directory: FilesystemDirectory.Data
+  //   });
+  //   return savedFile.uri;
+  // }
 }

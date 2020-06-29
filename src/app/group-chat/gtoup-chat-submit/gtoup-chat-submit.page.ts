@@ -4,6 +4,7 @@ import {Contact} from "../../models/contact.model";
 import {AlertController} from "@ionic/angular";
 import {CameraService} from "../../services/camera.service";
 import {ChatService} from "../../services/chat.service";
+import {CameraPhoto} from "@capacitor/core";
 
 @Component({
   selector: 'app-gtoup-chat-submit',
@@ -15,6 +16,7 @@ export class GtoupChatSubmitPage implements OnInit {
   selectedContacts: Contact[] = [];
   groupName: string;
   groupImageUrl: string = 'assets/icon/camera.png'
+  groupImage: CameraPhoto;
 
   constructor(private router: Router,
               private route: ActivatedRoute,
@@ -40,6 +42,7 @@ export class GtoupChatSubmitPage implements OnInit {
           handler: () => {
             this.cameraService.takePictureByCamera().then(image => {
                   this.groupImageUrl = image.webPath;
+                  this.groupImage = image;
                 }
             );
           }
@@ -49,6 +52,7 @@ export class GtoupChatSubmitPage implements OnInit {
           handler: () => {
             this.cameraService.takePictureFromGallery().then(image => {
                   this.groupImageUrl = image.webPath;
+                  this.groupImage = image;
                 }
             );
           }
@@ -60,7 +64,7 @@ export class GtoupChatSubmitPage implements OnInit {
   }
 
   submit() {
-    this.chatService.createNewGroup(this.selectedContacts, this.groupName, this.groupImageUrl).then(result => {
+    this.chatService.createNewGroup(this.selectedContacts, this.groupName, this.groupImage).then(result => {
       this.router.navigate(['/chats', result]);
     });
     // this.router.navigate(['/chats']);

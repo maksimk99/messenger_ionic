@@ -5,6 +5,9 @@ import {UserService} from "./user.service";
 import {Contact} from "../models/contact.model";
 import {BehaviorSubject} from "rxjs";
 import {SQLiteService} from "./database/sqlite.service";
+import {CameraPhoto, Capacitor, FilesystemDirectory, Plugins} from "@capacitor/core";
+import {FileWriterService} from "./file-writer.service";
+const { Filesystem } = Plugins;
 
 const CHAT_PREVIEW_LIST_SQL = "SELECT chats_preview.*, COUNT(msg.id) as unread_messages FROM" +
     "  (SELECT ch.id, " +
@@ -55,7 +58,8 @@ export class ChatService {
     messages: []
   });
 
-  constructor(private SQLiteDbService: SQLiteService, private userService: UserService) {
+  constructor(private SQLiteDbService: SQLiteService, private userService: UserService,
+              private fileWriterService: FileWriterService) {
     this.SQLiteDbService.getDatabaseState().subscribe(rdy => {
       if (rdy) {
         this.getChatPreviewsFromDB();
@@ -185,11 +189,14 @@ export class ChatService {
     return this.createNewGroup([contact], 'dialog', null)
   }
 
-  async createNewGroup(members: Contact[], groupName: string, groupImageUrl: string) {
+  async createNewGroup(members: Contact[], groupName: string, groupImage: CameraPhoto) {
     let membersId: number[] = members.map(member => member.id);
     membersId.push(this.userService.getCurrentUserId().id)
-    //TODO send to server
-
+    //TODO send to  server
+    let groupImageUrl = null;
+    if (groupImage !== null) {
+      groupImageUrl = Capacitor.convertFileSrc(await this.fileWriterService.saveTemporaryImage(groupImage.path));
+    }
     return this.SQLiteDbService.run(ADD_CHAT_SQL, [groupName, groupImageUrl]).then(result => {
           let groupId = result.changes.lastId;
           for(let i = 0; i < members.length; i++) {

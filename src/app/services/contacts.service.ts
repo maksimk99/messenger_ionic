@@ -2,6 +2,8 @@ import { Injectable } from '@angular/core';
 import {Contact} from "../models/contact.model";
 import {SQLiteService} from "./database/sqlite.service";
 import {BehaviorSubject, Observable} from "rxjs";
+import {Capacitor, Filesystem, FilesystemDirectory} from "@capacitor/core";
+import {FileWriterService} from "./file-writer.service";
 
 const GET_CONTACT_LIST_SQL = "SELECT * FROM contact"
 const ADD_CONTACT_SQL = "INSERT INTO contact(id, name, last_seen, avatar_url) VALUES (?, ?, ?, ?)"
@@ -13,7 +15,7 @@ export class ContactsService {
 
   private contactsList: BehaviorSubject<Contact[]> = new BehaviorSubject<Contact[]>([]);
 
-  constructor(private SQLiteDbService: SQLiteService) {
+  constructor(private SQLiteDbService: SQLiteService, private fileWriterService: FileWriterService) {
     this.SQLiteDbService.getDatabaseState().subscribe(rdy => {
       if (rdy) {
         this.getContactsFromDB();
@@ -60,7 +62,8 @@ export class ContactsService {
       avatarUrl: 'assets/icon/user.png'
     }
     this.SQLiteDbService.run(ADD_CONTACT_SQL,
-        [contact.id, contact.name, contact.lastSeen, contact.avatarUrl]).then(() => this.getContactsFromDB());
+          [contact.id, contact.name, contact.lastSeen, contact.avatarUrl])
+          .then(() => this.getContactsFromDB());
     //return else if contact with this phone number already exists
     return true;
   }
