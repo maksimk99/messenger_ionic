@@ -3,7 +3,6 @@ export interface ChatPreview {
     name: string,
     imageUrl: string,
     unreadMessages: number,
-    lastMessageSenderId: string,
     lastMessageSenderName: string,
     lastMessageText: string,
     lastMessageDate: Date

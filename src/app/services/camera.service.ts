@@ -1,16 +1,18 @@
 import { Injectable } from '@angular/core';
-import {CameraOptions, CameraResultType, CameraSource, Plugins} from "@capacitor/core";
+import {
+  Plugins, CameraResultType, Capacitor,
+  CameraPhoto, CameraSource, CameraOptions
+} from "@capacitor/core";
+const { Camera} = Plugins;
 
 const cameraOptions: CameraOptions = {
   quality: 100,
-  allowEditing: false,
   resultType: CameraResultType.Uri,
   source: CameraSource.Camera
 }
 
 const galleryOptions: CameraOptions = {
   quality: 100,
-  allowEditing: false,
   resultType: CameraResultType.Uri,
   source: CameraSource.Photos
 }
@@ -30,7 +32,7 @@ export class CameraService {
     return this.takePicture(galleryOptions);
   }
 
-  async takePicture(cameraOptions: CameraOptions) {
-    return Plugins.Camera.getPhoto(cameraOptions);
+  async takePicture(cameraOptions: CameraOptions): Promise<CameraPhoto> {
+    return Camera.getPhoto(cameraOptions);
   }
 }

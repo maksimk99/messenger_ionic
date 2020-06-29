@@ -16,7 +16,9 @@ export class GroupChatPage implements OnInit {
   constructor(private contactsService: ContactsService, private router: Router) { }
 
   ngOnInit() {
-    this.contacts = this.contactsService.getContacts();
+    this.contactsService.getContacts().subscribe(contacts => {
+      this.contacts = contacts;
+    });
   }
 
   submitSelected() {
@@ -28,15 +30,15 @@ export class GroupChatPage implements OnInit {
     this.router.navigate(['/groupChatCreate/submit'], navigationExtras);
   }
 
-  findContacts() {
-    this.contacts = this.contactsService.findContactsByName(this.searchString);
+  async findContacts() {
+    this.contacts = await this.contactsService.findContactsByName(this.searchString);
   }
 
   addContactToChat(contact: Contact) {
     this.selectedContacts.push(contact);
   }
 
-  removeContactFromChat(contactId: string) {
+  removeContactFromChat(contactId: number) {
     this.selectedContacts = this.selectedContacts.filter(contact => contact.id !== contactId);
   }
 }

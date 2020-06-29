@@ -1,62 +1,70 @@
 import { Injectable } from '@angular/core';
 import {Contact} from "../models/contact.model";
+import {SQLiteService} from "./database/sqlite.service";
+import {BehaviorSubject, Observable} from "rxjs";
+import {Capacitor, Filesystem, FilesystemDirectory} from "@capacitor/core";
+import {FileWriterService} from "./file-writer.service";
+
+const GET_CONTACT_LIST_SQL = "SELECT * FROM contact"
+const ADD_CONTACT_SQL = "INSERT INTO contact(id, name, last_seen, avatar_url) VALUES (?, ?, ?, ?)"
 
 @Injectable({
   providedIn: 'root'
 })
 export class ContactsService {
 
-  private contacts: Contact[] = [
-    {
-      id: 'user1',
-      name: 'Alex Stephanov',
-      avatarUrl: 'https://pickaface.net/gallery/avatar/Shahin_Hanafi5775381770e1f.png',
-      lastSeen: new Date(2020, 4, 29, 21, 12, 0, 0)
-    },
-    {
-      id: 'user3',
-      name: 'Mark Shulgan',
-      avatarUrl: 'https://pickaface.net/gallery/avatar/20151205_194059_2696_Chat.png',
-      lastSeen: new Date(2020, 5, 1, 11, 12, 0, 0)
-    },
-    {
-      id: 'user4',
-      name: 'Pavel Kachurka',
-      avatarUrl: 'https://encrypted-tbn0.gstatic.com/images?q=tbn%3AANd9GcRak8gbDrVjGID2DGz0I3irv0up0tuqt97AEFevYyMkZbYi-8ND&usqp=CAU',
-      lastSeen: new Date(2020, 4, 31, 21, 12, 0, 0)
-    },
-    {
-      id: 'user5',
-      name: 'Алина Концевич',
-      avatarUrl: 'https://techday24.com/wp-content/uploads/2020/05/Facebook-avatar-2020-2.jpg',
-      lastSeen: new Date(2020, 4, 31, 15, 37, 0, 0)
-    },
-    {
-      id: 'user6',
-      name: 'Даниил Федорович',
-      avatarUrl: 'https://encrypted-tbn0.gstatic.com/images?q=tbn%3AANd9GcQKYgIpJ-RRcHnyQcXwfWUNtzEHLURfUm9NRqaqYyNXpr1cTQze&usqp=CAU',
-      lastSeen: new Date(2020, 5, 1, 9, 12, 0, 0)
-    },
-    {
-      id: 'user7',
-      name: 'Марк Никитков',
-      avatarUrl: 'https://vignette.wikia.nocookie.net/avatar/images/8/85/Royal_messenger.png/revision/latest/top-crop/width/360/height/360?cb=20140510204457',
-      lastSeen: new Date(2020, 3, 12, 11, 12, 0, 0)
-    }
-  ]
+  private contactsList: BehaviorSubject<Contact[]> = new BehaviorSubject<Contact[]>([]);
 
-  constructor() { }
+  constructor(private SQLiteDbService: SQLiteService, private fileWriterService: FileWriterService) {
+    this.SQLiteDbService.getDatabaseState().subscribe(rdy => {
+      if (rdy) {
+        this.getContactsFromDB();
+      }
+    })
+  }
 
-  getContacts() {
-    return [...this.contacts];
+  getContacts(): Observable<Contact[]> {
+    return this.contactsList.asObservable();
+  }
+
+  getContactsFromDB() {
+    this.SQLiteDbService.query(GET_CONTACT_LIST_SQL).then(result => {
+      this.contactsList.next(this.getItems(result.values))
+    })
   }
 
   findContactsByName(name: string) {
-    return [...this.contacts.filter(contact => contact.name.toLowerCase().match("^" + name.toLowerCase() + ".*"))];
+    return this.contactsList.value.filter(contact => contact.name.toLowerCase().match("^" + name.toLowerCase() + ".*"));
+  }
+
+  getItems(values: Array<any>) {
+    let items: Contact[] = [];
+    if (values.length > 0) {
+      for (let i = 0; i < values.length; i++) {
+        let contact: Contact = {
+          id: values[i].id,
+          name: values[i].name,
+          avatarUrl: values[i].avatar_url,
+          lastSeen: new Date(values[i].last_seen)
+        };
+        items.push(contact);
+      }
+    }
+    return items;
   }
 
   addNewContact(phoneNumber: string) {
     //TODO send query to server to get user by phone number
-    return false;
+    let contact: Contact = {
+      id: this.contactsList.value.length + 2,
+      name: 'newUserName' + (this.contactsList.value.length + 2),
+      lastSeen: new Date(),
+      avatarUrl: 'assets/icon/user.png'
+    }
+    this.SQLiteDbService.run(ADD_CONTACT_SQL,
+          [contact.id, contact.name, contact.lastSeen, contact.avatarUrl])
+          .then(() => this.getContactsFromDB());
+    //return else if contact with this phone number already exists
+    return true;
   }
 }
