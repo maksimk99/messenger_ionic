@@ -1,46 +1,15 @@
 import {Injectable} from '@angular/core';
 import {ChatPreview} from "../models/chat-preview.model";
-import {Chat, Message, User} from "../models/chat.model";
-import {UserService} from "./user.service";
+import {Chat, Message, Participant} from "../models/chat.model";
 import {Contact} from "../models/contact.model";
 import {BehaviorSubject} from "rxjs";
 import {SQLiteService} from "./database/sqlite.service";
-import {CameraPhoto, Capacitor, FilesystemDirectory, Plugins} from "@capacitor/core";
+import {CameraPhoto, Capacitor} from "@capacitor/core";
 import {FileWriterService} from "./file-writer.service";
-const { Filesystem } = Plugins;
-
-const CHAT_PREVIEW_LIST_SQL = "SELECT chats_preview.*, COUNT(msg.id) as unread_messages FROM" +
-    "  (SELECT ch.id, " +
-    "          CASE COUNT(partisipant.id) WHEN 1 THEN GROUP_CONCAT(partisipant.name) ELSE ch.name END name, " +
-    "          CASE COUNT(partisipant.id) WHEN 1 THEN GROUP_CONCAT(partisipant.avatar_url) ELSE ch.avatar_url END avatar_url, " +
-    "     ch.last_read_message_id, m.message as last_message_text, m.date_sent as last_message_date," +
-    "     c.name as last_message_sender_name FROM chat as ch" +
-    "   LEFT JOIN message as m ON ch.last_message_id = m.id" +
-    "   LEFT JOIN contact as c ON m.sender_id = c.id" +
-    "   LEFT JOIN chat_has_contacts as chc ON ch.id = chc.chat_id" +
-    "   LEFT JOIN contact as partisipant ON chc.contact_id = partisipant.id" +
-    "   GROUP BY ch.id) as chats_preview" +
-    " LEFT JOIN message as msg ON chats_preview.id = msg.chat_id AND msg.date_sent > (SELECT date_sent FROM message WHERE id = chats_preview.last_read_message_id)" +
-    " GROUP BY chats_preview.id ";
-
-const CHAT_PREVIEW_LIST_BY_NAME_SQL = "SELECT ch.id FROM chat as ch\n" +
-    "         JOIN chat_has_contacts as chc ON ch.id = chc.chat_id\n" +
-    "         GROUP BY ch.id\n" +
-    "         HAVING COUNT(chc.contact_id) = 1 AND GROUP_CONCAT(chc.contact_id) = ?";
-
-const CHAT_BY_ID_SQL = "SELECT ch.id as chatId, ch.name as chatName, ch.avatar_url as chatAvatar, " +
-    "ch.last_read_message_id, c.id as participantId, c.name as participantName, c.avatar_url as participantAvatar, " +
-    "m.id as messageId, m.message, m.sender_id, m.date_sent FROM chat as ch\n" +
-    " JOIN chat_has_contacts chc ON ch.id = chc.chat_id\n" +
-    " JOIN contact c ON chc.contact_id = c.id \n" +
-    " LEFT JOIN message m ON ch.id = m.chat_id\n" +
-    " WHERE ch.id = ? ORDER BY m.date_sent, m.id ";
-
-const ADD_CHAT_SQL = "INSERT INTO chat (name, avatar_url) VALUES (?, ?)";
-const ADD_MEMBER_TO_CHAT_SQL = "INSERT INTO chat_has_contacts (chat_id, contact_id) VALUES (?, ?)";
-const ADD_MESSAGE_SQL = "INSERT INTO message (message, date_sent, chat_id, sender_id) VALUES ( ?, ?, ?, ?)";
-const UPDATE_LAST_READ_MESSAGE_IN_CHAT_BY_ID_SQL = "UPDATE chat SET last_read_message_id = ? WHERE id = ?";
-const UPDATE_LAST_MESSAGE_IN_CHAT_BY_ID_SQL = "UPDATE chat SET last_message_id = ? WHERE id = ?";
+import {ChatDTO} from "../models/loginresponse.model";
+import {SQLQuery} from "../properties/SQLQuery"
+import {HttpClient} from "@angular/common/http";
+import {Properties} from "../properties/Properties";
 
 @Injectable({
   providedIn: 'root'
@@ -50,15 +19,15 @@ export class ChatService {
   private messageId: number = 11;
   private chatsPreviewList: BehaviorSubject<ChatPreview[]> = new BehaviorSubject<ChatPreview[]>([]);
   private currentChat: BehaviorSubject<Chat> = new BehaviorSubject<Chat>({
-    id: -5,
-    name: 'undefined',
+    chatId: -5,
+    chatName: 'undefined',
     avatarUrl: 'assets/icon/group.png',
     lastReadMessageId: 1,
     participants: [],
     messages: []
   });
 
-  constructor(private SQLiteDbService: SQLiteService, private userService: UserService,
+  constructor(private SQLiteDbService: SQLiteService, private httpClient: HttpClient,
               private fileWriterService: FileWriterService) {
     this.SQLiteDbService.getDatabaseState().subscribe(rdy => {
       if (rdy) {
@@ -68,7 +37,7 @@ export class ChatService {
   }
 
   getChatPreviewsFromDB() {
-    this.SQLiteDbService.query(CHAT_PREVIEW_LIST_SQL).then(result => {
+    this.SQLiteDbService.query(SQLQuery.CHAT_PREVIEW_LIST).then(result => {
       let items: ChatPreview[] = [];
       if (result.values.length > 0) {
         for (let i = 0; i < result.values.length; i++) {
@@ -90,10 +59,10 @@ export class ChatService {
   }
 
   getChatByIdFromDB(chatId: number) {
-    this.SQLiteDbService.query(CHAT_BY_ID_SQL, [chatId.toString()]).then(result => {
+    this.SQLiteDbService.query(SQLQuery.CHAT_BY_ID, [chatId.toString()]).then(result => {
         let chat: Chat = {
-          id: result.values[0].chatId,
-          name: result.values[0].chatName,
+          chatId: result.values[0].chatId,
+          chatName: result.values[0].chatName,
           avatarUrl: result.values[0].chatAvatar,
           lastReadMessageId: result.values[0].last_read_message_id,
           participants: [],
@@ -119,17 +88,17 @@ export class ChatService {
     });
   }
 
-  createParticipant(values): User {
+  createParticipant(values): Participant {
     return {
-      id: values.participantId,
-      name: values.participantName,
+      participantId: values.participantId,
+      participantName: values.participantName,
       avatarUrl: values.participantAvatar
     }
   }
 
   createMessage(values): Message {
     return {
-      id: values.messageId,
+      messageId: values.messageId,
       message: values.message,
       senderId: !values.sender_id ? null : values.sender_id,
       time: new Date(values.date_sent)
@@ -141,7 +110,7 @@ export class ChatService {
   }
 
   getChatById(chatId: number) {
-    if (chatId != this.currentChat.value.id) {
+    if (chatId != this.currentChat.value.chatId) {
       this.getChatByIdFromDB(chatId)
     }
     return this.currentChat.asObservable();
@@ -156,22 +125,22 @@ export class ChatService {
   }
 
   saveMessage(chatId: number, senderId: number, date_sent: Date, message: string) {
-    this.SQLiteDbService.run(ADD_MESSAGE_SQL, [message, date_sent, chatId, senderId]).then(result => {
+    this.SQLiteDbService.run(SQLQuery.ADD_MESSAGE, [message, date_sent, chatId, senderId]).then(result => {
           if (!senderId) {
-            this.SQLiteDbService.run(UPDATE_LAST_READ_MESSAGE_IN_CHAT_BY_ID_SQL,
+            this.SQLiteDbService.run(SQLQuery.UPDATE_LAST_READ_MESSAGE_IN_CHAT_BY_ID,
                 [result.changes.lastId, chatId]);
           }
-          if (chatId === this.currentChat.value.id) {
+          if (chatId === this.currentChat.value.chatId) {
             this.getChatByIdFromDB(chatId);
           }
-          this.SQLiteDbService.run(UPDATE_LAST_MESSAGE_IN_CHAT_BY_ID_SQL,
+          this.SQLiteDbService.run(SQLQuery.UPDATE_LAST_MESSAGE_IN_CHAT_BY_ID,
               [result.changes.lastId, chatId]).then(result => this.getChatPreviewsFromDB());
     });
   }
 
   setLastReadMessages(messageId: number, chatId: number) {
-    this.SQLiteDbService.run(UPDATE_LAST_READ_MESSAGE_IN_CHAT_BY_ID_SQL, [messageId, chatId]).then(() => {
-          if (chatId === this.currentChat.value.id) {
+    this.SQLiteDbService.run(SQLQuery.UPDATE_LAST_READ_MESSAGE_IN_CHAT_BY_ID, [messageId, chatId]).then(() => {
+          if (chatId === this.currentChat.value.chatId) {
             this.getChatByIdFromDB(chatId);
           }
           this.getChatPreviewsFromDB();
@@ -179,31 +148,57 @@ export class ChatService {
   }
 
   findChatWithUserById(userId: number): Promise<number> {
-    return this.SQLiteDbService.query(CHAT_PREVIEW_LIST_BY_NAME_SQL, [userId.toString()]).then(result => {
+    return this.SQLiteDbService.query(SQLQuery.CHAT_PREVIEW_LIST_BY_NAME, [userId.toString()]).then(result => {
             return result.values.length === 1 ? result.values[0].id : null;
     })
   }
 
-  createChatWithUser(contact: Contact) {
+  createChatWithUser(contact: Contact, currentUserId: number) {
     //TODO create chat and return generated id
-    return this.createNewGroup([contact], 'dialog', null)
+    return this.createNewGroup([contact], 'dialog', null, currentUserId)
   }
 
-  async createNewGroup(members: Contact[], groupName: string, groupImage: CameraPhoto) {
-    let membersId: number[] = members.map(member => member.id);
-    membersId.push(this.userService.getCurrentUserId().id)
-    //TODO send to  server
+  async createNewGroup(members: Contact[], groupName: string, groupImage: CameraPhoto, currentUserId: number) {
+    let membersId: number[] = members.map(member => member.contactId);
+    membersId.push(currentUserId)
     let groupImageUrl = null;
-    if (groupImage !== null) {
+    if (groupImage) {
       groupImageUrl = Capacitor.convertFileSrc(await this.fileWriterService.saveTemporaryImage(groupImage.path));
     }
-    return this.SQLiteDbService.run(ADD_CHAT_SQL, [groupName, groupImageUrl]).then(result => {
-          let groupId = result.changes.lastId;
-          for(let i = 0; i < members.length; i++) {
-            this.SQLiteDbService.run(ADD_MEMBER_TO_CHAT_SQL, [groupId, members[i].id]);
-          }
+    let chatDTO: ChatDTO = {
+      chatId: null,
+      chatName: groupName,
+      avatarUrl: groupImageUrl,
+      members: membersId
+    }
+    return this.httpClient.post<number>(Properties.BASE_URL + "/chat/create", chatDTO).toPromise().then((chatId: number) => {
+      if (chatId !== null) {
+        chatDTO.chatId = chatId;
+        return this.saveChatToDatabase(chatDTO, currentUserId).then((result) => {
           this.getChatPreviewsFromDB();
-          return groupId;
+          return result;
+        })
+      } else {
+        return null;
+      }
+    });
+  }
+
+  async saveChatListToDatabase(chats: ChatDTO[], currentUserId: number) {
+    for(let i = 0; i < chats.length; i++) {
+      await this.saveChatToDatabase(chats[i], currentUserId)
+    }
+    this.getChatPreviewsFromDB();
+  }
+
+  async saveChatToDatabase(chat: ChatDTO, currentUserId: number) {
+    return this.SQLiteDbService.run(SQLQuery.ADD_CHAT, [chat.chatId, chat.chatName, chat.avatarUrl]).then(result => {
+      for(let i = 0; i < chat.members.length; i++) {
+        if (chat.members[i] !== currentUserId) {
+          this.SQLiteDbService.run(SQLQuery.ADD_MEMBER_TO_CHAT, [chat.chatId, chat.members[i]]);
+        }
+      }
+      return chat.chatId;
     });
   }
 }

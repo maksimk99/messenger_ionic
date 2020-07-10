@@ -3,6 +3,7 @@ import {Contact} from "../models/contact.model";
 import {ContactsService} from "../services/contacts.service";
 import {ChatService} from "../services/chat.service";
 import {Router} from "@angular/router";
+import {UserService} from "../services/user.service";
 
 @Component({
   selector: 'app-contacts',
@@ -16,7 +17,7 @@ export class ContactsPage implements OnInit {
   isSearchActive: boolean = false;
 
   constructor(private contactsService: ContactsService, private chatService: ChatService,
-              private router: Router) { }
+              private userService: UserService, private router: Router) { }
 
   ngOnInit() {
     this.contactsService.getContacts().subscribe(contacts => {
@@ -44,8 +45,9 @@ export class ContactsPage implements OnInit {
       if (chatId !== null) {
         this.router.navigate(['/chats/', chatId])
       } else {
-        let contact = this.contacts.find(contact => contact.id === contactId);
-        this.chatService.createChatWithUser(contact).then(chatId => this.router.navigate(['/chats/', chatId]));
+        let contact = this.contacts.find(contact => contact.contactId === contactId);
+        this.chatService.createChatWithUser(contact, this.userService.getCurrentUserId()).then(chatId =>
+            this.router.navigate(['/chats/', chatId]));
       }
     });
   }

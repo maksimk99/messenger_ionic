@@ -21,7 +21,7 @@ export class ProfilePage implements OnInit {
 
   ngOnInit() {
     this.userService.getCurrentUser().subscribe(user => this.user = user);
-    this.userName = this.user.name;
+    this.userName = this.user.userName;
     this.imageUrl = this.user.avatarUrl;
   }
 

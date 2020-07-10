@@ -3,7 +3,7 @@
     <ion-img [src]="contact.avatarUrl ? contact.avatarUrl : 'assets/icon/user.png'"></ion-img>
   </ion-avatar>
   <ion-label>
-    <h2>{{contact.name}}</h2>
+    <h2>{{contact.contactName}}</h2>
     <p>{{lastSeenFormat(contact.lastSeen)}}</p>
   </ion-label>
   <ion-buttons slot="end" *ngIf="selected">

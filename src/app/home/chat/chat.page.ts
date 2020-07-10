@@ -1,7 +1,7 @@
 import {Component, ElementRef, OnInit, ViewChild} from '@angular/core';
 import {ActivatedRoute, Router} from "@angular/router";
 import {ChatService} from "../../services/chat.service";
-import {Chat, User} from "../../models/chat.model";
+import {Chat, Participant} from "../../models/chat.model";
 import {IonContent} from "@ionic/angular";
 import {UserService} from "../../services/user.service";
 import {CurrentUser} from "../../models/current-user.model";
@@ -56,22 +56,28 @@ export class ChatPage implements OnInit {
   }
 
   ionViewWillLeave() {
-    this.setLastReadMessage(this.chat.messages[this.chat.messages.length - 1].id);
+    if (this.chat.messages.length > 0) {
+      this.setLastReadMessage(this.chat.messages[this.chat.messages.length - 1].messageId);
+    }
   }
 
   sendMessage() {
     if (this.enteredMessage.trim().length > 0) {
       this.isCurrentUserSentMessage = true;
-      this.chatService.sendMessage(this.enteredMessage, this.chat.id);
+      this.chatService.sendMessage(this.enteredMessage, this.chat.chatId);
       this.enteredMessage = "";
     }
   }
 
-  getSenderInfo(senderId: number): User {
+  getSenderInfo(senderId: number): Participant {
     if (!senderId) {
-      return this.currentUser;
+      return {
+        participantId: this.currentUser.userId,
+        participantName: this.currentUser.userName,
+        avatarUrl: this.currentUser.avatarUrl
+      };
     } else {
-      return this.chat.participants.find(participant => participant.id === senderId)
+      return this.chat.participants.find(participant => participant.participantId === senderId)
     }
   }
 
@@ -80,6 +86,6 @@ export class ChatPage implements OnInit {
   }
 
   setLastReadMessage(messageId: number) {
-    this.chatService.setLastReadMessages(messageId, this.chat.id);
+    this.chatService.setLastReadMessages(messageId, this.chat.chatId);
   }
 }

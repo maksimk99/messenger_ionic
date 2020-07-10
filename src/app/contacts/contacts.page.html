@@ -22,7 +22,7 @@
 
 <ion-content>
   <ion-list>
-    <app-contact [contact]="contact" (click)="openChatWithContact(contact.id)" *ngFor="let contact of contacts"></app-contact>
+    <app-contact [contact]="contact" (click)="openChatWithContact(contact.contactId)" *ngFor="let contact of contacts"></app-contact>
   </ion-list>
 
   <ion-fab vertical="bottom" horizontal="end" slot="fixed">

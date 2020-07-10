@@ -4,6 +4,7 @@ import {CountryISO, SearchCountryField, TooltipLabel} from 'ngx-intl-tel-input';
 import {ContactsService} from "../../services/contacts.service";
 import {Router} from "@angular/router";
 import {AlertController} from "@ionic/angular";
+import {HttpErrorResponse} from "@angular/common/http";
 
 @Component({
     selector: 'app-new-contact',
@@ -25,11 +26,20 @@ export class NewContactPage {
     }
 
     onSubmit() {
-        if (this.contactsService.addNewContact(this.phoneForm.value.phone.internationalNumber)) {
-            this.router.navigate(['/chats']);
-        } else {
-            this.presentAlert()
-        }
+        this.contactsService.addNewContact(this.phoneForm.value.phone.internationalNumber).then(contactId => {
+            if (contactId) {
+                this.router.navigate(['/chats']);
+            } else {
+                this.presentAlert()
+            }
+        }).catch((err: HttpErrorResponse) => {
+            this.alertController.create({
+                header: 'Connection failed',
+                message: "<h6>Cannot connect to the server</h6>" +
+                    "<p><i>Please check your internet connection and try again.</i></p>",
+                buttons: ['OK']
+            }).then(alert => alert.present());
+        });
     }
 
     async presentAlert() {

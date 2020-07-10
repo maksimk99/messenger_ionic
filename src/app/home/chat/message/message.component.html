@@ -1,7 +1,7 @@
-<ion-item id="unreadMessages" *ngIf="lastReadMessageId === previousMessage?.id" class="unreadMessagesColor">
+<ion-item id="unreadMessages" *ngIf="lastReadMessageId === previousMessage?.messageId" class="unreadMessagesColor">
     <ion-label class="ion-text-center ion-no-margin" color="light">Unread messages</ion-label>
 </ion-item>
-<ion-row [id]="message.id">
+<ion-row [id]="message.messageId">
     <ion-col size="2" *ngIf="isGroupChat">
         <ion-avatar style="width: auto; height: auto"
                     *ngIf="previousMessage?.senderId !== message.senderId && !isCurrentUser">

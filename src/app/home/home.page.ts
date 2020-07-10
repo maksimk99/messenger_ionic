@@ -1,10 +1,9 @@
-import {Component, OnInit, ViewChild} from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 import {ChatPreview} from "../models/chat-preview.model";
 import {ChatService} from "../services/chat.service";
 import {formatDate} from "@angular/common";
 import {CurrentUser} from "../models/current-user.model";
 import {UserService} from "../services/user.service";
-import {IonMenu} from "@ionic/angular";
 
 @Component({
     selector: 'app-home',
@@ -12,7 +11,6 @@ import {IonMenu} from "@ionic/angular";
     styleUrls: ['home.page.scss'],
 })
 export class HomePage implements OnInit {
-    @ViewChild(IonMenu) ionMenu: IonMenu;
     chats: ChatPreview[];
     currentUser: CurrentUser;
     searchString: string;
@@ -32,7 +30,6 @@ export class HomePage implements OnInit {
 
     ionViewWillLeave() {
         this.deActivateSearch();
-        this.ionMenu.close();
     }
 
     activateSearch() {

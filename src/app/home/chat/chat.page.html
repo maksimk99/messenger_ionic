@@ -10,7 +10,7 @@
             (chat.participants[0].avatarUrl !== null ? chat.participants[0].avatarUrl : 'assets/icon/user.png') :
             (chat.avatarUrl !== null ? chat.avatarUrl : 'assets/icon/group.png')"></ion-img>
         </ion-avatar>
-        <ion-title slot="start" [textContent]="chat.participants.length === 1 ? chat.participants[0].name : chat.name"></ion-title>
+        <ion-title slot="start" [textContent]="chat.participants.length === 1 ? chat.participants[0].participantName : chat.chatName"></ion-title>
     </ion-toolbar>
 </ion-header>
 

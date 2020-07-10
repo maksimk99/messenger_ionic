@@ -59,9 +59,6 @@ export class SQLiteService {
         if (!result) {
           console.log('ERROR opening DB')
         }
-        this.run('UPDATE chat SET last_read_message_id = 1, last_message_id = 5 WHERE id = 1')
-        this.run('UPDATE chat SET last_read_message_id = 2, last_message_id = 10 WHERE id = 2')
-        this.run('UPDATE chat SET last_read_message_id = 6, last_message_id = 7 WHERE id = 3')
         this.databaseReady.next(true)
     });
 

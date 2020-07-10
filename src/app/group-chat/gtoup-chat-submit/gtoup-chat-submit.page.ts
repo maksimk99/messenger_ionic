@@ -5,6 +5,8 @@ import {AlertController} from "@ionic/angular";
 import {CameraService} from "../../services/camera.service";
 import {ChatService} from "../../services/chat.service";
 import {CameraPhoto} from "@capacitor/core";
+import {UserService} from "../../services/user.service";
+import {HttpErrorResponse} from "@angular/common/http";
 
 @Component({
   selector: 'app-gtoup-chat-submit',
@@ -22,6 +24,7 @@ export class GtoupChatSubmitPage implements OnInit {
               private route: ActivatedRoute,
               private alertController: AlertController,
               private cameraService: CameraService,
+              private userService: UserService,
               private chatService: ChatService) { }
 
   ngOnInit() {
@@ -64,9 +67,15 @@ export class GtoupChatSubmitPage implements OnInit {
   }
 
   submit() {
-    this.chatService.createNewGroup(this.selectedContacts, this.groupName, this.groupImage).then(result => {
+    this.chatService.createNewGroup(this.selectedContacts, this.groupName, this.groupImage, this.userService.getCurrentUserId()).then(result => {
       this.router.navigate(['/chats', result]);
+    }).catch((err: HttpErrorResponse) => {
+      this.alertController.create({
+        header: 'Connection failed',
+        message: "<h6>Cannot connect to the server</h6>" +
+            "<p><i>Please check your internet connection and try again.</i></p>",
+        buttons: ['OK']
+      }).then(alert => alert.present());
     });
-    // this.router.navigate(['/chats']);
   }
 }

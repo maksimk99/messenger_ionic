@@ -1,3 +1,47 @@
 <ion-app>
-  <ion-router-outlet></ion-router-outlet>
+  <ion-menu side="start" menuId="menuOnHomePage" content-id="main-content">
+    <ion-header>
+      <ion-toolbar color="primary">
+        <ion-avatar class="ion-margin-top ion-margin-horizontal">
+          <ion-img [src]="currentUser?.avatarUrl"></ion-img>
+        </ion-avatar>
+      </ion-toolbar>
+      <ion-toolbar color="primary">
+        <ion-title class="ion-margin-start ion-no-padding ion-padding-vertical ion-text-left" slot="start">
+          <p class="ion-no-margin" [textContent]="currentUser?.userName"></p>
+          <p class="ion-no-margin" [textContent]="currentUser?.phoneNumber"></p>
+        </ion-title>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content>
+      <ion-list>
+        <ion-menu-toggle>
+          <ion-item [routerLink]="['/groupChatCreate']" detail="false">
+            <ion-icon name="people" slot="start"></ion-icon>
+            <ion-label>New Group</ion-label>
+          </ion-item>
+        </ion-menu-toggle>
+        <ion-menu-toggle>
+          <ion-item [routerLink]="['/contacts']" detail="false">
+            <ion-icon name="person" slot="start"></ion-icon>
+            <ion-label>Contacts</ion-label>
+          </ion-item>
+        </ion-menu-toggle>
+        <ion-menu-toggle>
+          <ion-item [routerLink]="['/profile']" detail="false">
+            <ion-icon name="settings" slot="start"></ion-icon>
+            <ion-label>Profile</ion-label>
+          </ion-item>
+        </ion-menu-toggle>
+        <ion-menu-toggle>
+          <ion-item detail="false" (click)="logout()">
+            <ion-icon name="exit" slot="start"></ion-icon>
+            <ion-label>Log Out</ion-label>
+          </ion-item>
+        </ion-menu-toggle>
+      </ion-list>
+    </ion-content>
+  </ion-menu>
+
+  <ion-router-outlet id="main-content"></ion-router-outlet>
 </ion-app>

@@ -18,7 +18,7 @@
 <ion-content>
   <ion-list>
     <app-contact [contact]="contact" [selected]="selectedContacts.indexOf(contact) !== -1"
-                 (click)="selectedContacts.indexOf(contact) === -1 ? addContactToChat(contact) : removeContactFromChat(contact.id)"
+                 (click)="selectedContacts.indexOf(contact) === -1 ? addContactToChat(contact) : removeContactFromChat(contact.contactId)"
                  *ngFor="let contact of contacts"></app-contact>
   </ion-list>
 </ion-content>

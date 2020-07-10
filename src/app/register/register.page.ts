@@ -1,9 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import {FormBuilder, FormControl, FormGroup, Validators} from "@angular/forms";
 import {CountryISO, SearchCountryField, TooltipLabel} from 'ngx-intl-tel-input';
-import {AlertController} from "@ionic/angular";
+import {AlertController, MenuController} from "@ionic/angular";
 import {Router} from "@angular/router";
 import {UserService} from "../services/user.service";
+import {HttpErrorResponse} from "@angular/common/http";
 
 @Component({
   selector: 'app-register',
@@ -19,7 +20,7 @@ export class RegisterPage implements OnInit {
   registerForm: FormGroup;
 
   constructor(private userService: UserService, private alertController: AlertController,
-              private router: Router, private formBuilder: FormBuilder) {
+              private router: Router, private formBuilder: FormBuilder, private menuCtrl: MenuController) {
     this.registerForm = formBuilder.group({
       phone: ['', Validators.required],
       userName: ['', Validators.compose([Validators.minLength(5), Validators.maxLength(30), Validators.pattern('[a-zA-Z ]*'), Validators.required])],
@@ -28,21 +29,31 @@ export class RegisterPage implements OnInit {
   }
 
   ngOnInit() {
+    this.menuCtrl.enable(false, 'menuOnHomePage');
   }
 
   register() {
-    let response = this.userService.register(
+    this.userService.register(
         {
           phoneNumber: this.registerForm.value.phone.internationalNumber,
           userName: this.registerForm.value.userName,
           password: this.registerForm.value.password
         }
-    )
-    if (!response) {
-      this.presentAlert()
-    } else {
-      this.router.navigate(['/chats']);
-    }
+    ).then(userId => {
+      if (userId) {
+        this.menuCtrl.enable(true, 'menuOnHomePage').then(() =>
+            this.router.navigate(['/chats']));
+      } else {
+        this.presentAlert()
+      }
+    }).catch((err: HttpErrorResponse) => {
+      this.alertController.create({
+        header: 'Connection failed',
+        message: "<h6>Cannot connect to the server</h6>" +
+            "<p><i>Please check your internet connection and try again.</i></p>",
+        buttons: ['OK']
+      }).then(alert => alert.present());
+    });
   }
 
   async presentAlert() {

@@ -11,9 +11,6 @@
         {"column": "phone_number", "value": "TEXT NOT NULL"},
         {"column": "password", "value": "TEXT NOT NULL"},
         {"column": "avatar_url", "value": "TEXT"}
-      ],
-      "values": [
-        [2, "Maksimiliyan Katuranau", "+375 33 664-87-14", "password", "https://pickaface.net/gallery/avatar/20151205_194059_2696_Chat.png"]
       ]
     },
     {
@@ -27,14 +24,6 @@
       ],
       "indexes": [
         {"name": "index_contact_on_id", "column": "id"}
-      ],
-      "values": [
-        [1, "Alexei Stephanov", "+375 33 664-87-14", "https://pickaface.net/gallery/avatar/Shahin_Hanafi5775381770e1f.png", "2020-04-29 21:12:00"],
-        [3, "Mark Shulgan", "+375 33 664-87-14", "https://pickaface.net/gallery/avatar/20151205_194059_2696_Chat.png", "2020-05-01 11:12:00"],
-        [4, "Pavel Kachurka", "+375 33 664-87-14", "https://pickaface.net/gallery/avatar/20151205_194059_2696_Chat.png", "2020-04-31 10:22:00"],
-        [5, "Алина Концевич", "+375 33 664-87-14", "https://techday24.com/wp-content/uploads/2020/05/Facebook-avatar-2020-2.jpg", "2020-04-31 10:22:00"],
-        [6, "Даниил Федорович", "+375 33 664-87-14", "https://encrypted-tbn0.gstatic.com/images?q=tbn%3AANd9GcQKYgIpJ-RRcHnyQcXwfWUNtzEHLURfUm9NRqaqYyNXpr1cTQze&usqp=CAU", "2020-05-01 10:22:00"],
-        [7, "Марк Никитков", "+375 33 664-87-14", "https://vignette.wikia.nocookie.net/avatar/images/8/85/Royal_messenger.png/revision/latest/top-crop/width/360/height/360?cb=20140510204457", "2020-03-12 10:22:00"]
       ]
     },
     {
@@ -50,13 +39,6 @@
       ],
       "indexes": [
         {"name": "index_chat_on_id", "column": "id"}
-      ],
-      "values": [
-        [1, "firstChat", "assets/icon/camera.png", null, null],
-        [2, "secondChat", "assets/icon/camera.png", null, null],
-        [3, "thirdChat", "assets/icon/camera.png", null, null],
-        [4, "forthChat", "assets/icon/camera.png", null, null],
-        [5, "fifthChat", "assets/icon/camera.png", null, null]
       ]
     },
     {
@@ -74,18 +56,6 @@
         {"name": "index_message_on_id", "column": "id"},
         {"name": "index_message_on_chat_id", "column": "chat_id"},
         {"name": "index_message_on_date_sent", "column": "date_sent"}
-      ],
-      "values": [
-        [1, "some text", "2020-05-25 15:22:00", 1, 1],
-        [2, "Когда пишем контрольную?", "2020-05-25 15:23:00", 2, 5],
-        [3, "some text", "2020-05-25 15:24:00", 1, null],
-        [4, "20", "2020-05-25 15:25:00", 2, null],
-        [5, "some text", "2020-05-25 15:26:00", 1, 1],
-        [6, "some text", "2020-05-25 15:27:00", 3, 4],
-        [7, "Хорошо", "2020-05-25 15:28:00", 2, 3],
-        [8, "Тест 10 вопросов, три задачи на ВВП, номинальные и реальные показатели, индексы", "2020-05-25 15:29:00", 2, 3],
-        [9, "Дома задачи 5 и 6 решить", "2020-05-25 15:29:00", 2, null],
-        [10, "Доброе утро! Сегодня пишем контрольную в 14:00", "2020-05-25 15:31:00", 2, 5]
       ]
     },
     {
@@ -96,15 +66,6 @@
         {"column": "contact_id", "value": "INTEGER NOT NULL"},
         {"foreignkey": "chat_id", "value": "REFERENCES chat(id) ON DELETE CASCADE"},
         {"foreignkey": "contact_id", "value": "REFERENCES contact(id) ON DELETE CASCADE"}
-      ],
-      "values": [
-        [1, 1, 1],
-        [2, 2, 3],
-        [3, 3, 4],
-        [4, 2, 5],
-        [5, 2, 1],
-        [6, 4, 6],
-        [7, 5, 7]
       ]
     }
   ]

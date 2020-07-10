@@ -1,5 +1,5 @@
 import {Component, Input, OnInit} from '@angular/core';
-import {Message, User} from "../../../models/chat.model";
+import {Message, Participant} from "../../../models/chat.model";
 
 @Component({
   selector: 'app-message',
@@ -9,7 +9,7 @@ import {Message, User} from "../../../models/chat.model";
 export class MessageComponent {
 
   @Input() message: Message;
-  @Input() sender: User;
+  @Input() sender: Participant;
   @Input() isGroupChat: boolean;
   @Input() isCurrentUser: boolean;
   @Input() previousMessage: Message;

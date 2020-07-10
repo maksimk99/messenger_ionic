@@ -4,13 +4,12 @@ import {CameraPhoto, Capacitor} from "@capacitor/core";
 import {BehaviorSubject, Observable} from "rxjs";
 import {SQLiteService} from "./database/sqlite.service";
 import {FileWriterService} from "./file-writer.service";
-
-const GET_CURRENT_USER_SQL = "SELECT * FROM user";
-const DELETE_USER_SQL = "DELETE FROM user";
-const ADD_NEW_USER_SQL = "INSERT INTO user (name, phone_number, password) VALUES (?, ?, ?)";
-const UPDATE_NEW_USER_SQL = "UPDATE user SET name = ?, avatar_url = ?";
-
-const USER_AVATAR_IMAGE_NAME = 'userImageFileName.jpeg';
+import {HttpClient} from "@angular/common/http";
+import {LoginUserResponse} from "../models/loginresponse.model";
+import {ContactsService} from "./contacts.service";
+import {ChatService} from "./chat.service";
+import {SQLQuery} from "../properties/SQLQuery"
+import {Properties} from "../properties/Properties";
 
 @Injectable({
   providedIn: 'root'
@@ -20,7 +19,8 @@ export class UserService {
   private currentUserId;
   private currentUser: BehaviorSubject<CurrentUser> = new BehaviorSubject<CurrentUser>(null);
 
-  constructor(private SQLiteDbService: SQLiteService, private fileWriterService: FileWriterService) {
+  constructor(private SQLiteDbService: SQLiteService, private fileWriterService: FileWriterService,
+              private httpClient: HttpClient, private contactsService: ContactsService, private chatService: ChatService) {
     this.SQLiteDbService.getDatabaseState().subscribe(rdy => {
       if (rdy) {
         this.getCurrentUserFromDB();
@@ -29,14 +29,32 @@ export class UserService {
   }
 
   login(loginObject) {
-    let currentUser = this.currentUser.value;
-    return currentUser && loginObject.phoneNumber === currentUser.phoneNumber &&
-        loginObject.password === currentUser.password;
+    return this.httpClient.post<LoginUserResponse>(Properties.BASE_URL + "/login", loginObject).toPromise().then((user: LoginUserResponse) => {
+      if (user !== null) {
+        this.setCurrentUserInDB(user);
+        this.contactsService.saveContactListToDatabase(user.contacts).then(() =>
+            this.chatService.saveChatListToDatabase(user.chats, user.userId));
+        return true;
+      } else {
+        return false;
+      }
+    });
   }
 
   register(registerObject) {
-    this.setCurrentUserInDB(registerObject);
-    return true;
+    return this.httpClient.post<number>(Properties.BASE_URL + "/register", registerObject).toPromise().then((userId: number) => {
+      if (userId !== null) {
+        registerObject.id = userId;
+        this.setCurrentUserInDB(registerObject);
+        return true
+      } else {
+        return false;
+      }
+    })
+  }
+
+  logout() {
+    return this.SQLiteDbService.run(SQLQuery.LOGOUT_USER);
   }
 
   getCurrentUserId() {
@@ -48,25 +66,26 @@ export class UserService {
   }
 
   getCurrentUserFromDB() {
-    this.SQLiteDbService.query(GET_CURRENT_USER_SQL).then(result => {
+    this.SQLiteDbService.query(SQLQuery.GET_CURRENT_USER).then(result => {
       if (result.values.length > 0) {
         let user: CurrentUser = {
-          id: result.values[0].id,
-          name: result.values[0].name,
+          userId: result.values[0].id,
+          userName: result.values[0].name,
           phoneNumber: result.values[0].phone_number,
           avatarUrl: result.values[0].avatar_url ? result.values[0].avatar_url : 'assets/icon/user.png',
           password: result.values[0].password
         }
-        this.currentUserId = user.id;
+        this.currentUserId = user.userId;
         this.currentUser.next(user)
       }
     })
   }
 
-  setCurrentUserInDB(currentUser) {
-    this.SQLiteDbService.run(DELETE_USER_SQL).then(() => {
-      this.SQLiteDbService.run(ADD_NEW_USER_SQL,
-          [currentUser.userName, currentUser.phoneNumber, currentUser.password]).then(() => {
+  setCurrentUserInDB(currentUser: CurrentUser) {
+    this.SQLiteDbService.run(SQLQuery.DELETE_USER).then(() => {
+      this.SQLiteDbService.run(SQLQuery.ADD_NEW_USER,
+          [currentUser.userId, currentUser.userName, currentUser.phoneNumber, currentUser.avatarUrl,
+            currentUser.password]).then(() => {
         this.getCurrentUserFromDB();
       })
     })
@@ -75,29 +94,16 @@ export class UserService {
   async updateUserInfo(userName: string, cameraPhoto: CameraPhoto) {
     let user = this.currentUser.value;
     if (userName != null && userName.trim().length > 0) {
-      user.name = userName;
+      user.userName = userName;
     }
     if (cameraPhoto != null) {
       this.fileWriterService.saveTemporaryImage(cameraPhoto.path).then(userAvatarUrl => {
-        this.SQLiteDbService.run(UPDATE_NEW_USER_SQL, [user.name, Capacitor.convertFileSrc(userAvatarUrl)]).
+        this.SQLiteDbService.run(SQLQuery.UPDATE_NEW_USER, [user.userName, Capacitor.convertFileSrc(userAvatarUrl)]).
         then(() => this.getCurrentUserFromDB());
       });
     } else {
-      this.SQLiteDbService.run(UPDATE_NEW_USER_SQL, [user.name, user.avatarUrl]).
+      this.SQLiteDbService.run(SQLQuery.UPDATE_NEW_USER, [user.userName, user.avatarUrl]).
       then(() => this.getCurrentUserFromDB());
     }
   }
-  //
-  // async updateUserAvatar(cameraPhoto: CameraPhoto) {
-  //   const readFile =  await Filesystem.readFile({
-  //     path: cameraPhoto.path
-  //   });
-  //
-  //   let savedFile = await Filesystem.writeFile({
-  //     path: new Date().getTime() + '.jpeg',
-  //     data: readFile.data,
-  //     directory: FilesystemDirectory.Data
-  //   });
-  //   return savedFile.uri;
-  // }
 }

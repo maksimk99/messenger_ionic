@@ -39,6 +39,6 @@ export class GroupChatPage implements OnInit {
   }
 
   removeContactFromChat(contactId: number) {
-    this.selectedContacts = this.selectedContacts.filter(contact => contact.id !== contactId);
+    this.selectedContacts = this.selectedContacts.filter(contact => contact.contactId !== contactId);
   }
 }
