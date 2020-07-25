@@ -7,8 +7,8 @@
         </ion-buttons>
         <ion-avatar slot="start">
             <ion-img [src]="chat.participants.length === 1 ?
-            (chat.participants[0].avatarUrl !== null ? chat.participants[0].avatarUrl : 'assets/icon/user.png') :
-            (chat.avatarUrl !== null ? chat.avatarUrl : 'assets/icon/group.png')"></ion-img>
+            (chat.participants[0].avatarUrl ? chat.participants[0].avatarUrl : 'assets/icon/user.png') :
+            (chat.avatarUrl ? chat.avatarUrl : 'assets/icon/group.png')"></ion-img>
         </ion-avatar>
         <ion-title slot="start" [textContent]="chat.participants.length === 1 ? chat.participants[0].participantName : chat.chatName"></ion-title>
     </ion-toolbar>
@@ -18,12 +18,12 @@
     <ion-list #scrollList>
         <app-message  [message]="message" [sender]="getSenderInfo(message.senderId)"
                      [isGroupChat]="chat.participants.length > 1" [isCurrentUser]="message.senderId === null"
-                     [previousMessage]="i !== 0 ? chat.messages[i-1] : null"
-                     [lastReadMessageId]="chat.lastReadMessageId"
+                     [previousMessageSenderId]="i !== 0 ? chat.messages[i-1].senderId : null"
+                     [isFirstUnreadMessage]="(i !== 0 && chat.messages[i-1].messageId === chat?.lastReadMessageId) ||
+                                (i === 0 && !chat.lastReadMessageId)"
                      *ngFor="let message of chat.messages; let i = index;">
         </app-message>
     </ion-list>
-    <div id="unreadMessages"></div>
 </ion-content>
 
 <ion-footer>

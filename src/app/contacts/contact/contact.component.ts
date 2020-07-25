@@ -1,4 +1,4 @@
-import {Component, Input, OnInit} from '@angular/core';
+import {Component, Input} from '@angular/core';
 import {Contact} from "../../models/contact.model";
 import {formatDate} from "@angular/common";
 

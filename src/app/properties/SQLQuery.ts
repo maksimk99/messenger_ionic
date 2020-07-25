@@ -16,8 +16,9 @@ export enum SQLQuery {
         '   LEFT JOIN chat_has_contacts as chc ON ch.id = chc.chat_id' +
         '   LEFT JOIN contact as partisipant ON chc.contact_id = partisipant.id' +
         '   GROUP BY ch.id) as chats_preview' +
-        ' LEFT JOIN message as msg ON chats_preview.id = msg.chat_id AND msg.date_sent > (SELECT date_sent FROM message WHERE id = chats_preview.last_read_message_id)' +
-        ' GROUP BY chats_preview.id ',
+        ' LEFT JOIN message as msg ON chats_preview.id = msg.chat_id AND msg.date_sent > (SELECT COALESCE((SELECT date_sent FROM message WHERE id = chats_preview.last_read_message_id), "2000-01-01 12:00:00.120"))' +
+        ' GROUP BY chats_preview.id' +
+        ' ORDER BY chats_preview.last_message_date DESC',
     CHAT_PREVIEW_LIST_BY_NAME = 'SELECT ch.id FROM chat as ch\n' +
         '         JOIN chat_has_contacts as chc ON ch.id = chc.chat_id\n' +
         '         GROUP BY ch.id\n' +
@@ -34,5 +35,4 @@ export enum SQLQuery {
     ADD_MESSAGE = 'INSERT INTO message (message, date_sent, chat_id, sender_id) VALUES ( ?, ?, ?, ?)',
     UPDATE_LAST_READ_MESSAGE_IN_CHAT_BY_ID = 'UPDATE chat SET last_read_message_id = ? WHERE id = ?',
     UPDATE_LAST_MESSAGE_IN_CHAT_BY_ID = 'UPDATE chat SET last_message_id = ? WHERE id = ?',
-    LOGOUT_USER = 'DELETE FROM user; DELETE FROM message; DELETE FROM chat_has_contacts; DELETE FROM chat; DELETE FROM contact'
 }

@@ -39,8 +39,10 @@ export class AppComponent implements OnInit {
 
   logout() {
     this.userService.logout().then(result => {
-      this.menuCtrl.enable(false, 'menuOnHomePage').then(() =>
-          this.router.navigate(['/login']));
+      if (result) {
+        this.menuCtrl.enable(false, 'menuOnHomePage').then(() =>
+            this.router.navigate(['/login']));
+      }
     });
   }
 }

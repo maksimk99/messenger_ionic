@@ -10,6 +10,7 @@ import {ContactsService} from "./contacts.service";
 import {ChatService} from "./chat.service";
 import {SQLQuery} from "../properties/SQLQuery"
 import {Properties} from "../properties/Properties";
+import {WebSocketAPI} from "./rabbitmq/web-socket-a-p-i.service";
 
 @Injectable({
   providedIn: 'root'
@@ -20,7 +21,8 @@ export class UserService {
   private currentUser: BehaviorSubject<CurrentUser> = new BehaviorSubject<CurrentUser>(null);
 
   constructor(private SQLiteDbService: SQLiteService, private fileWriterService: FileWriterService,
-              private httpClient: HttpClient, private contactsService: ContactsService, private chatService: ChatService) {
+              private httpClient: HttpClient, private contactsService: ContactsService,
+              private chatService: ChatService, private webSocketAPI: WebSocketAPI) {
     this.SQLiteDbService.getDatabaseState().subscribe(rdy => {
       if (rdy) {
         this.getCurrentUserFromDB();
@@ -29,12 +31,14 @@ export class UserService {
   }
 
   login(loginObject) {
-    return this.httpClient.post<LoginUserResponse>(Properties.BASE_URL + "/login", loginObject).toPromise().then((user: LoginUserResponse) => {
+    return this.httpClient.post<LoginUserResponse>(Properties.BASE_URL + "/login", loginObject).toPromise().then(async (user: LoginUserResponse) => {
       if (user !== null) {
-        this.setCurrentUserInDB(user);
-        this.contactsService.saveContactListToDatabase(user.contacts).then(() =>
-            this.chatService.saveChatListToDatabase(user.chats, user.userId));
-        return true;
+        await this.setCurrentUserInDB(user);
+        return this.contactsService.saveContactListToDatabase(user.contacts).then(result =>
+            this.chatService.saveChatListToDatabase(user.chats, user.userId).then(result => {
+                  this.webSocketAPI.connect(user.userId);
+                  return true;
+            }));
       } else {
         return false;
       }
@@ -42,10 +46,18 @@ export class UserService {
   }
 
   register(registerObject) {
-    return this.httpClient.post<number>(Properties.BASE_URL + "/register", registerObject).toPromise().then((userId: number) => {
+    return this.httpClient.post<number>(Properties.BASE_URL + "/register", registerObject).toPromise().then(async (userId: number) => {
       if (userId !== null) {
-        registerObject.id = userId;
-        this.setCurrentUserInDB(registerObject);
+        let currentUser: CurrentUser = {
+          userId: userId,
+          userName: registerObject.userName,
+          phoneNumber: registerObject.phoneNumber,
+          avatarUrl: null,
+          password: registerObject.password
+        }
+        registerObject.userId = userId;
+        await this.setCurrentUserInDB(currentUser);
+        this.webSocketAPI.connect(userId);
         return true
       } else {
         return false;
@@ -54,7 +66,18 @@ export class UserService {
   }
 
   logout() {
-    return this.SQLiteDbService.run(SQLQuery.LOGOUT_USER);
+    this.webSocketAPI.disconnect();
+    this.chatService.clearData();
+    this.contactsService.clearData();
+    this.currentUserId = null;
+    this.currentUser = new BehaviorSubject<CurrentUser>(null);
+    return this.SQLiteDbService.isDBExists(Properties.DB_NAME).then(result => {
+      if (result) {
+        return this.SQLiteDbService.deleteDB().then(() => this.SQLiteDbService.createDB().then(() => true))
+      } else  {
+        return this.SQLiteDbService.createDB().then(() => true)
+      }
+    })
   }
 
   getCurrentUserId() {
@@ -76,14 +99,15 @@ export class UserService {
           password: result.values[0].password
         }
         this.currentUserId = user.userId;
+        this.chatService.setCurrentUserId(user.userId)
         this.currentUser.next(user)
       }
     })
   }
 
-  setCurrentUserInDB(currentUser: CurrentUser) {
-    this.SQLiteDbService.run(SQLQuery.DELETE_USER).then(() => {
-      this.SQLiteDbService.run(SQLQuery.ADD_NEW_USER,
+  async setCurrentUserInDB(currentUser: CurrentUser) {
+    await this.SQLiteDbService.run(SQLQuery.DELETE_USER).then(async () => {
+      await this.SQLiteDbService.run(SQLQuery.ADD_NEW_USER,
           [currentUser.userId, currentUser.userName, currentUser.phoneNumber, currentUser.avatarUrl,
             currentUser.password]).then(() => {
         this.getCurrentUserFromDB();

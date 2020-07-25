@@ -1,5 +1,5 @@
-import { Component, OnInit } from '@angular/core';
-import {FormBuilder, FormControl, FormGroup, Validators} from "@angular/forms";
+import {Component, OnInit} from '@angular/core';
+import {FormBuilder, FormGroup, Validators} from "@angular/forms";
 import {CountryISO, SearchCountryField, TooltipLabel} from 'ngx-intl-tel-input';
 import {AlertController, MenuController} from "@ionic/angular";
 import {Router} from "@angular/router";

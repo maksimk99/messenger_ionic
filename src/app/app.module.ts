@@ -11,6 +11,7 @@ import { AppRoutingModule } from './app-routing.module';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { SQLiteService } from "./services/database/sqlite.service";
 import { HttpClientModule } from '@angular/common/http';
+import {WebSocketAPI} from "./services/rabbitmq/web-socket-a-p-i.service";
 
 @NgModule({
   declarations: [AppComponent],
@@ -21,7 +22,7 @@ import { HttpClientModule } from '@angular/common/http';
     StatusBar,
     SplashScreen,
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
-    SQLiteService
+    SQLiteService, WebSocketAPI
   ],
   bootstrap: [AppComponent]
 })

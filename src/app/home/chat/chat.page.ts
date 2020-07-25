@@ -51,8 +51,15 @@ export class ChatPage implements OnInit {
     this.mutationObserver.observe(this.chatList.nativeElement, {
       childList: true
     });
-    let y = document.getElementById('unreadMessages').offsetTop;
-    this.contentArea.scrollToPoint(0, y - 9);
+  }
+
+  ionViewDidEnter() {
+      let y = document.getElementById('unreadMessages')?.offsetTop;
+      if(y) {
+        this.contentArea.scrollToPoint(0, y - 9);
+      } else {
+        this.contentArea.scrollToBottom();
+      }
   }
 
   ionViewWillLeave() {
@@ -64,7 +71,7 @@ export class ChatPage implements OnInit {
   sendMessage() {
     if (this.enteredMessage.trim().length > 0) {
       this.isCurrentUserSentMessage = true;
-      this.chatService.sendMessage(this.enteredMessage, this.chat.chatId);
+      this.chatService.sendMessage(this.enteredMessage, this.chat.chatId, this.currentUser.userId);
       this.enteredMessage = "";
     }
   }

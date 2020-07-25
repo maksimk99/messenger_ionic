@@ -5,6 +5,7 @@ import {ContactsService} from "../../services/contacts.service";
 import {Router} from "@angular/router";
 import {AlertController} from "@ionic/angular";
 import {HttpErrorResponse} from "@angular/common/http";
+import {UserService} from "../../services/user.service";
 
 @Component({
     selector: 'app-new-contact',
@@ -22,11 +23,11 @@ export class NewContactPage {
     });
 
     constructor(private contactsService: ContactsService, private alertController: AlertController,
-                private router: Router) {
+                private userService: UserService, private router: Router) {
     }
 
     onSubmit() {
-        this.contactsService.addNewContact(this.phoneForm.value.phone.internationalNumber).then(contactId => {
+        this.contactsService.addNewContact(this.phoneForm.value.phone.internationalNumber, this.userService.getCurrentUserId()).then(contactId => {
             if (contactId) {
                 this.router.navigate(['/chats']);
             } else {

@@ -5,9 +5,8 @@ import * as CapacitorSQLPlugin from 'capacitor-sqlite';
 import { BehaviorSubject } from "rxjs";
 import { Platform } from "@ionic/angular";
 import {HttpClient} from "@angular/common/http";
+import {Properties} from "../../properties/Properties";
 const { CapacitorSQLite, Device } = Plugins;
-
-const DB_NAME:string = "messengerDB";
 
 @Injectable({
   providedIn: 'root'
@@ -21,9 +20,9 @@ export class SQLiteService {
     this.databaseReady = new BehaviorSubject(false);
     this.platform.ready().then(() => {
       this.initializePlugin().then(() => {
-        this.isDBExists(DB_NAME).then(isBDExists => {
+        this.isDBExists(Properties.DB_NAME).then(isBDExists => {
           if (isBDExists.result) {
-            this.openDB(DB_NAME);
+            this.openDB(Properties.DB_NAME);
           } else {
             this.createDB();
           }
@@ -70,7 +69,7 @@ export class SQLiteService {
   async createDB() {
     this.httpClient.get('assets/databaseStructure.json').subscribe(data => {
       this.sqlite.importFromJson({jsonstring: JSON.stringify(data)}).then(() => {
-        this.openDB(DB_NAME);
+        this.openDB(Properties.DB_NAME);
       }).catch(error => console.log(JSON.stringify(error)));
     });
 
@@ -114,7 +113,7 @@ export class SQLiteService {
   async run(statement: string, _values?: Array<any>): Promise<any> {
     if (this.isService && statement.length > 0) {
       const values: Array<any> = _values ? _values : [];
-      return await this.sqlite.run({statement: statement, values: values});
+      return this.sqlite.run({statement: statement, values: values});
     } else {
       console.log("Service not started");
       return Promise.resolve({changes: -1, message: "Service not started"});
@@ -152,11 +151,10 @@ export class SQLiteService {
 
   /**
    * Delete the Database file
-   * @param dbName string
    */
-  async deleteDB(dbName: string): Promise<any> {
+  async deleteDB(): Promise<any> {
     if (this.isService) {
-      return await this.sqlite.deleteDatabase({database: dbName});
+      return await this.sqlite.deleteDatabase({database: Properties.DB_NAME});
     } else {
       console.log("Service not started");
       return Promise.resolve({result: false, message: "Service not started"});

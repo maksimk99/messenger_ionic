@@ -1,5 +1,5 @@
-import { Injectable } from '@angular/core';
-import { FilesystemDirectory, Plugins } from "@capacitor/core";
+import {Injectable} from '@angular/core';
+import {FilesystemDirectory, Plugins} from "@capacitor/core";
 
 const { Filesystem } = Plugins;
 

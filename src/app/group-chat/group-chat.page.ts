@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 import {Contact} from "../models/contact.model";
 import {ContactsService} from "../services/contacts.service";
 import {NavigationExtras, Router} from "@angular/router";

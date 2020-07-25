@@ -1,8 +1,6 @@
-import { Injectable } from '@angular/core';
-import {
-  Plugins, CameraResultType, Capacitor,
-  CameraPhoto, CameraSource, CameraOptions
-} from "@capacitor/core";
+import {Injectable} from '@angular/core';
+import {CameraOptions, CameraPhoto, CameraResultType, CameraSource, Plugins} from "@capacitor/core";
+
 const { Camera} = Plugins;
 
 const cameraOptions: CameraOptions = {

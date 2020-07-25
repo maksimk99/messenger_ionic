@@ -1,5 +1,9 @@
 {
   "appId": "com.epam.messenger",
   "appName": "Messenger",
-  "linuxAndroidStudioPath": "/home/maksim/.local/share/JetBrains/Toolbox/apps/AndroidStudio/ch-0/192.6392135/bin/studio.sh"
+  "linuxAndroidStudioPath": "/home/maksim/.local/share/JetBrains/Toolbox/apps/AndroidStudio/ch-0/192.6392135/bin/studio.sh",
+  "server": {
+    "url": "http://192.168.43.125:8100",
+    "cleartext": true
+  }
 }

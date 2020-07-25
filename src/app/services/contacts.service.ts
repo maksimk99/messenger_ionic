@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import {Injectable} from '@angular/core';
 import {Contact} from "../models/contact.model";
 import {SQLiteService} from "./database/sqlite.service";
 import {BehaviorSubject, Observable} from "rxjs";
@@ -53,8 +53,10 @@ export class ContactsService {
     return items;
   }
 
-  addNewContact(phoneNumber: string): Promise<number> {
-    let params = new HttpParams().set('phoneNumber', phoneNumber);
+  addNewContact(phoneNumber: string, currentUserId: number): Promise<number> {
+    let params = new HttpParams()
+        .set('phoneNumber', phoneNumber)
+        .set('userId', currentUserId.toString());
     return this.httpClient.get<Contact>(Properties.BASE_URL + "/user", { params: params }).toPromise().then((contact: Contact) => {
       if (contact !== null) {
         return this.SQLiteDbService.run(SQLQuery.ADD_CONTACT,
@@ -68,11 +70,35 @@ export class ContactsService {
     });
   }
 
+  async clearData() {
+    this.contactsList = new BehaviorSubject<Contact[]>([]);
+  }
+
+  async saveContactsOfNewChat(contacts: Contact[], currentUserId: number) {
+    let contactsSaved: Contact[] = this.contactsList.value;
+    let contactDTOList: ContactDTO[] = contacts
+        .filter(participant => participant.contactId !== currentUserId &&
+            !contactsSaved.some((item) => item.contactId === participant.contactId))
+        .map(participant => {
+          return  {
+            userId: participant.contactId,
+            userName: participant.contactName,
+            phoneNumber: participant.phoneNumber,
+            avatarUrl: participant.avatarUrl,
+            lastSeen: participant.lastSeen
+          }
+        });
+    return await this.saveContactListToDatabase(contactDTOList);
+  }
+
   async saveContactListToDatabase(contacts: ContactDTO[]) {
+    let number = 0;
     for(let i = 0; i < contacts.length; i++) {
+      number += 1;
       await this.SQLiteDbService.run(SQLQuery.ADD_CONTACT,
           [contacts[i].userId, contacts[i].userName, contacts[i].lastSeen, contacts[i].phoneNumber, contacts[i].avatarUrl]);
     }
     this.getContactsFromDB();
+    return number;
   }
 }

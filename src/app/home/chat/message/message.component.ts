@@ -1,4 +1,4 @@
-import {Component, Input, OnInit} from '@angular/core';
+import {Component, Input} from '@angular/core';
 import {Message, Participant} from "../../../models/chat.model";
 
 @Component({
@@ -12,8 +12,8 @@ export class MessageComponent {
   @Input() sender: Participant;
   @Input() isGroupChat: boolean;
   @Input() isCurrentUser: boolean;
-  @Input() previousMessage: Message;
-  @Input() lastReadMessageId: string;
+  @Input() previousMessageSenderId: number;
+  @Input() isFirstUnreadMessage: boolean;
 
   constructor() { }
 }

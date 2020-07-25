@@ -10,30 +10,64 @@ import {ChatDTO} from "../models/loginresponse.model";
 import {SQLQuery} from "../properties/SQLQuery"
 import {HttpClient} from "@angular/common/http";
 import {Properties} from "../properties/Properties";
+import {WebSocketAPI} from "./rabbitmq/web-socket-a-p-i.service";
+import {MessageDTO} from "../models/message.model";
+import {NewChatDTO} from "../models/chat-dto.model";
+import {ContactsService} from "./contacts.service";
+
+const DEFAULT_CHAT: Chat = {
+  chatId: -5,
+  chatName: 'undefined',
+  avatarUrl: 'assets/icon/group.png',
+  lastReadMessageId: 1,
+  participants: [],
+  messages: []
+}
 
 @Injectable({
   providedIn: 'root'
 })
 export class ChatService {
 
-  private messageId: number = 11;
+  private currentUserId: number;
   private chatsPreviewList: BehaviorSubject<ChatPreview[]> = new BehaviorSubject<ChatPreview[]>([]);
-  private currentChat: BehaviorSubject<Chat> = new BehaviorSubject<Chat>({
-    chatId: -5,
-    chatName: 'undefined',
-    avatarUrl: 'assets/icon/group.png',
-    lastReadMessageId: 1,
-    participants: [],
-    messages: []
-  });
+  private currentChat: BehaviorSubject<Chat> = new BehaviorSubject<Chat>(DEFAULT_CHAT);
+  private chatInProcessOfCreation: ChatDTO = null;
 
   constructor(private SQLiteDbService: SQLiteService, private httpClient: HttpClient,
-              private fileWriterService: FileWriterService) {
+              private fileWriterService: FileWriterService, private webSocketAPI: WebSocketAPI,
+              private contactsService: ContactsService) {
     this.SQLiteDbService.getDatabaseState().subscribe(rdy => {
       if (rdy) {
         this.getChatPreviewsFromDB();
       }
+    });
+    this.webSocketAPI.getMessages().subscribe((message: MessageDTO) => {
+      if (message !== null) {
+        this.saveMessage(message.chatId, message.senderId, new Date(message.dateSent), message.message);
+      }
+    });
+    this.webSocketAPI.getNewGroup().subscribe((chat: NewChatDTO) => {
+      if (chat !== null && chat.chatName !== this.chatInProcessOfCreation?.chatName
+          && chat.participants.length !== this.chatInProcessOfCreation?.members.length
+          && !this.chatsPreviewList.value.find(chatPreview => chatPreview.id === chat.chatId)) {
+        let membersId: number[] = chat.participants.map(member => member.contactId);
+        let chatDTO: ChatDTO = {
+          chatId: chat.chatId,
+          chatName: chat.chatName,
+          avatarUrl: chat.avatarUrl,
+          members: membersId
+        }
+        this.contactsService.saveContactsOfNewChat(chat.participants, this.currentUserId).then(result => {
+              this.saveChatToDatabase(chatDTO, this.currentUserId).then(() =>
+                  this.getChatPreviewsFromDB())
+            });
+      }
     })
+  }
+
+  setCurrentUserId(currentUserId: number) {
+    this.currentUserId = currentUserId;
   }
 
   getChatPreviewsFromDB() {
@@ -120,8 +154,14 @@ export class ChatService {
     return this.chatsPreviewList.value.filter(chatPreview => chatPreview.name.toLowerCase().match("^" + name.toLowerCase() + ".*"));
   }
 
-  sendMessage(vMessage:string, chatId: number) {
-    this.saveMessage(chatId, null, new Date(), vMessage)
+  sendMessage(vMessage:string, chatId: number, currentUserId: number) {
+    let message: MessageDTO = {
+      message: vMessage,
+      senderId: currentUserId,
+      chatId: chatId,
+      dateSent: new Date()
+    }
+    return this.webSocketAPI.send(message);
   }
 
   saveMessage(chatId: number, senderId: number, date_sent: Date, message: string) {
@@ -158,6 +198,12 @@ export class ChatService {
     return this.createNewGroup([contact], 'dialog', null, currentUserId)
   }
 
+  async clearData() {
+    this.currentUserId = null;
+    this.chatsPreviewList = new BehaviorSubject<ChatPreview[]>([]);
+    this.currentChat = new BehaviorSubject<Chat>(DEFAULT_CHAT);
+  }
+
   async createNewGroup(members: Contact[], groupName: string, groupImage: CameraPhoto, currentUserId: number) {
     let membersId: number[] = members.map(member => member.contactId);
     membersId.push(currentUserId)
@@ -171,34 +217,41 @@ export class ChatService {
       avatarUrl: groupImageUrl,
       members: membersId
     }
-    return this.httpClient.post<number>(Properties.BASE_URL + "/chat/create", chatDTO).toPromise().then((chatId: number) => {
+    this.chatInProcessOfCreation = chatDTO;
+    return await this.httpClient.post<number>(Properties.BASE_URL + "/chat/create", chatDTO).toPromise().then((chatId: number) => {
       if (chatId !== null) {
         chatDTO.chatId = chatId;
         return this.saveChatToDatabase(chatDTO, currentUserId).then((result) => {
           this.getChatPreviewsFromDB();
+          this.chatInProcessOfCreation = null;
           return result;
         })
       } else {
+        this.chatInProcessOfCreation = null;
         return null;
       }
     });
   }
 
   async saveChatListToDatabase(chats: ChatDTO[], currentUserId: number) {
+    let number = 0;
     for(let i = 0; i < chats.length; i++) {
+      number += 1;
       await this.saveChatToDatabase(chats[i], currentUserId)
     }
     this.getChatPreviewsFromDB();
+    return number;
   }
 
   async saveChatToDatabase(chat: ChatDTO, currentUserId: number) {
-    return this.SQLiteDbService.run(SQLQuery.ADD_CHAT, [chat.chatId, chat.chatName, chat.avatarUrl]).then(result => {
-      for(let i = 0; i < chat.members.length; i++) {
-        if (chat.members[i] !== currentUserId) {
-          this.SQLiteDbService.run(SQLQuery.ADD_MEMBER_TO_CHAT, [chat.chatId, chat.members[i]]);
-        }
+    let number = 0;
+    await this.SQLiteDbService.run(SQLQuery.ADD_CHAT, [chat.chatId, chat.chatName, chat.avatarUrl]);
+    for(let i = 0; i < chat.members.length; i++) {
+      if (chat.members[i] !== currentUserId) {
+        number += 1;
+        await this.SQLiteDbService.run(SQLQuery.ADD_MEMBER_TO_CHAT, [chat.chatId, chat.members[i]]);
       }
-      return chat.chatId;
-    });
+    }
+    return chat.chatId;
   }
 }
