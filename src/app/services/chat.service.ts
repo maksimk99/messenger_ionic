@@ -4,8 +4,6 @@ import {Chat, Message, Participant} from "../models/chat.model";
 import {Contact} from "../models/contact.model";
 import {BehaviorSubject} from "rxjs";
 import {SQLiteService} from "./database/sqlite.service";
-import {CameraPhoto, Capacitor} from "@capacitor/core";
-import {FileWriterService} from "./file-writer.service";
 import {ChatDTO} from "../models/loginresponse.model";
 import {SQLQuery} from "../properties/SQLQuery"
 import {HttpClient} from "@angular/common/http";
@@ -35,8 +33,7 @@ export class ChatService {
   private chatInProcessOfCreation: ChatDTO = null;
 
   constructor(private SQLiteDbService: SQLiteService, private httpClient: HttpClient,
-              private fileWriterService: FileWriterService, private webSocketAPI: WebSocketAPI,
-              private contactsService: ContactsService) {
+              private webSocketAPI: WebSocketAPI, private contactsService: ContactsService) {
     this.SQLiteDbService.getDatabaseState().subscribe(rdy => {
       if (rdy) {
         this.getChatPreviewsFromDB();
@@ -200,28 +197,29 @@ export class ChatService {
 
   async clearData() {
     this.currentUserId = null;
-    this.chatsPreviewList = new BehaviorSubject<ChatPreview[]>([]);
-    this.currentChat = new BehaviorSubject<Chat>(DEFAULT_CHAT);
+    this.chatsPreviewList.next([]);
+    this.currentChat.next(DEFAULT_CHAT);
   }
 
-  async createNewGroup(members: Contact[], groupName: string, groupImage: CameraPhoto, currentUserId: number) {
+  async createNewGroup(members: Contact[], groupName: string, imageWebPath: string, currentUserId: number) {
     let membersId: number[] = members.map(member => member.contactId);
     membersId.push(currentUserId)
-    let groupImageUrl = null;
-    if (groupImage) {
-      groupImageUrl = Capacitor.convertFileSrc(await this.fileWriterService.saveTemporaryImage(groupImage.path));
+    const formData = new FormData();
+    if (imageWebPath) {
+      const blob = await fetch(imageWebPath).then(r => r.blob());
+      formData.append('file', blob, 'file.jpg');
     }
     let chatDTO: ChatDTO = {
       chatId: null,
       chatName: groupName,
-      avatarUrl: groupImageUrl,
+      avatarUrl: null,
       members: membersId
     }
+    formData.append("chatDTO", JSON.stringify(chatDTO));
     this.chatInProcessOfCreation = chatDTO;
-    return await this.httpClient.post<number>(Properties.BASE_URL + "/chat/create", chatDTO).toPromise().then((chatId: number) => {
-      if (chatId !== null) {
-        chatDTO.chatId = chatId;
-        return this.saveChatToDatabase(chatDTO, currentUserId).then((result) => {
+    return await this.httpClient.post<ChatDTO>(Properties.BASE_URL + "/chat/create", formData).toPromise().then((chat: ChatDTO) => {
+      if (chat !== null) {
+        return this.saveChatToDatabase(chat, currentUserId).then((result) => {
           this.getChatPreviewsFromDB();
           this.chatInProcessOfCreation = null;
           return result;

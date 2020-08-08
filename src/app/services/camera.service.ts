@@ -1,7 +1,7 @@
 import {Injectable} from '@angular/core';
 import {CameraOptions, CameraPhoto, CameraResultType, CameraSource, Plugins} from "@capacitor/core";
 
-const { Camera} = Plugins;
+const {Camera} = Plugins;
 
 const cameraOptions: CameraOptions = {
   quality: 100,

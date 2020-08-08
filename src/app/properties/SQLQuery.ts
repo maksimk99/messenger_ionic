@@ -1,10 +1,11 @@
 export enum SQLQuery {
     GET_CURRENT_USER = 'SELECT * FROM user',
-    DELETE_USER = 'DELETE FROM user',
-    ADD_NEW_USER = 'INSERT INTO user (id, name, phone_number, avatar_url, password) VALUES (?, ?, ?, ?, ?)',
-    UPDATE_NEW_USER = 'UPDATE user SET name = ?, avatar_url = ?',
+    DELETE_CURRENT_USER = 'DELETE FROM user',
+    SAVE_CURRENT_USER = 'INSERT INTO user (id, name, phone_number, avatar_url, password) VALUES (?, ?, ?, ?, ?)',
+    UPDATE_CURRENT_USER = 'UPDATE user SET name = ?, avatar_url = ? WHERE id = ?',
     GET_CONTACT_LIST = 'SELECT * FROM contact',
     ADD_CONTACT = 'INSERT INTO contact(id, name, last_seen, phone_number, avatar_url) VALUES (?, ?, ?, ?, ?)',
+    UPDATE_CONTACT_INFO = 'UPDATE contact SET name = ?, avatar_url = ?, last_seen = ? WHERE id = ?',
     CHAT_PREVIEW_LIST = 'SELECT chats_preview.*, COUNT(msg.id) as unread_messages FROM' +
         '  (SELECT ch.id, ' +
         '          CASE COUNT(partisipant.id) WHEN 1 THEN GROUP_CONCAT(partisipant.name) ELSE ch.name END name, ' +

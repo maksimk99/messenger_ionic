@@ -6,7 +6,7 @@
     <ion-title>Profile</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="submitChanges()" fill="solid" color="secondary"
-                  [disabled]="!cameraPhoto && user.userName === userName || userName.trim().length ===0">Submit</ion-button>
+                  [disabled]="(user.avatarUrl === imageUrl && user.userName === userName) || userName.trim().length === 0">Submit</ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>

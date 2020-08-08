@@ -17,8 +17,7 @@ export class GtoupChatSubmitPage implements OnInit {
 
   selectedContacts: Contact[] = [];
   groupName: string;
-  groupImageUrl: string = 'assets/icon/camera.png'
-  groupImage: CameraPhoto;
+  groupImageUrl: string;
 
   constructor(private router: Router,
               private route: ActivatedRoute,
@@ -45,7 +44,6 @@ export class GtoupChatSubmitPage implements OnInit {
           handler: () => {
             this.cameraService.takePictureByCamera().then(image => {
                   this.groupImageUrl = image.webPath;
-                  this.groupImage = image;
                 }
             );
           }
@@ -55,7 +53,6 @@ export class GtoupChatSubmitPage implements OnInit {
           handler: () => {
             this.cameraService.takePictureFromGallery().then(image => {
                   this.groupImageUrl = image.webPath;
-                  this.groupImage = image;
                 }
             );
           }
@@ -67,7 +64,8 @@ export class GtoupChatSubmitPage implements OnInit {
   }
 
   submit() {
-    this.chatService.createNewGroup(this.selectedContacts, this.groupName, this.groupImage, this.userService.getCurrentUserId()).then(result => {
+    this.chatService.createNewGroup(this.selectedContacts, this.groupName, this.groupImageUrl,
+        this.userService.getCurrentUserId()).then(result => {
       this.router.navigate(['/chats', result]);
     }).catch((err: HttpErrorResponse) => {
       this.alertController.create({

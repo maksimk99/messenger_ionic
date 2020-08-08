@@ -6,6 +6,7 @@ import {ContactDTO} from "../models/loginresponse.model";
 import {HttpClient, HttpParams} from "@angular/common/http";
 import {SQLQuery} from "../properties/SQLQuery"
 import {Properties} from "../properties/Properties";
+import {WebSocketAPI} from "./rabbitmq/web-socket-a-p-i.service";
 
 @Injectable({
   providedIn: 'root'
@@ -14,12 +15,20 @@ export class ContactsService {
 
   private contactsList: BehaviorSubject<Contact[]> = new BehaviorSubject<Contact[]>([]);
 
-  constructor(private SQLiteDbService: SQLiteService, private httpClient: HttpClient) {
+  constructor(private SQLiteDbService: SQLiteService, private httpClient: HttpClient,
+              private webSocketAPI: WebSocketAPI) {
     this.SQLiteDbService.getDatabaseState().subscribe(rdy => {
       if (rdy) {
         this.getContactsFromDB();
       }
     })
+    this.webSocketAPI.getContactInfo().subscribe((contact: Contact) => {
+      if (contact !== null) {
+        this.SQLiteDbService.run(SQLQuery.UPDATE_CONTACT_INFO, [contact.contactName, contact.avatarUrl, new Date(contact.lastSeen), contact.contactId]).then(() => {
+          this.getContactsFromDB();
+        });
+      }
+    });
   }
 
   getContacts(): Observable<Contact[]> {
@@ -71,7 +80,7 @@ export class ContactsService {
   }
 
   async clearData() {
-    this.contactsList = new BehaviorSubject<Contact[]>([]);
+    this.contactsList.next([]);
   }
 
   async saveContactsOfNewChat(contacts: Contact[], currentUserId: number) {

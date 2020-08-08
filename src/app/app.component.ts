@@ -22,6 +22,9 @@ export class AppComponent implements OnInit {
     private menuCtrl: MenuController, private router: Router
   ) {
     this.initializeApp();
+    this.userService.getCurrentUser().subscribe(user => {
+      this.currentUser = user;
+    });
   }
 
   initializeApp() {
@@ -32,9 +35,7 @@ export class AppComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.userService.getCurrentUser().subscribe(user => {
-      this.currentUser = user;
-    });
+
   }
 
   logout() {

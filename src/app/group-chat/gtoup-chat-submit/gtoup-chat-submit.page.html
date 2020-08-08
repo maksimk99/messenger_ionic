@@ -15,7 +15,7 @@
 <ion-content>
   <ion-item>
     <ion-avatar class="group-image" (click)="selectImageSource()">
-      <ion-img [src]="groupImageUrl"></ion-img>
+      <ion-img [src]="groupImageUrl ? groupImageUrl : 'assets/icon/camera.png'"></ion-img>
     </ion-avatar>
     <ion-input class="ion-margin-start" placeholder="Enter group name..." [(ngModel)]="groupName"></ion-input>
   </ion-item>

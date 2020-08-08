@@ -1,9 +1,7 @@
 import {Injectable} from '@angular/core';
 import {CurrentUser} from "../models/current-user.model";
-import {CameraPhoto, Capacitor} from "@capacitor/core";
 import {BehaviorSubject, Observable} from "rxjs";
 import {SQLiteService} from "./database/sqlite.service";
-import {FileWriterService} from "./file-writer.service";
 import {HttpClient} from "@angular/common/http";
 import {LoginUserResponse} from "../models/loginresponse.model";
 import {ContactsService} from "./contacts.service";
@@ -20,7 +18,7 @@ export class UserService {
   private currentUserId;
   private currentUser: BehaviorSubject<CurrentUser> = new BehaviorSubject<CurrentUser>(null);
 
-  constructor(private SQLiteDbService: SQLiteService, private fileWriterService: FileWriterService,
+  constructor(private SQLiteDbService: SQLiteService,
               private httpClient: HttpClient, private contactsService: ContactsService,
               private chatService: ChatService, private webSocketAPI: WebSocketAPI) {
     this.SQLiteDbService.getDatabaseState().subscribe(rdy => {
@@ -28,6 +26,12 @@ export class UserService {
         this.getCurrentUserFromDB();
       }
     })
+    this.webSocketAPI.getCurrentUserInfo().subscribe((currentUser: CurrentUser) => {
+      if (currentUser !== null) {
+        this.SQLiteDbService.run(SQLQuery.UPDATE_CURRENT_USER, [currentUser.userName, currentUser.avatarUrl,
+          this.currentUserId]).then(() => {this.getCurrentUserFromDB();});
+      }
+    });
   }
 
   login(loginObject) {
@@ -70,7 +74,7 @@ export class UserService {
     this.chatService.clearData();
     this.contactsService.clearData();
     this.currentUserId = null;
-    this.currentUser = new BehaviorSubject<CurrentUser>(null);
+    this.currentUser.next(null);
     return this.SQLiteDbService.isDBExists(Properties.DB_NAME).then(result => {
       if (result) {
         return this.SQLiteDbService.deleteDB().then(() => this.SQLiteDbService.createDB().then(() => true))
@@ -106,28 +110,25 @@ export class UserService {
   }
 
   async setCurrentUserInDB(currentUser: CurrentUser) {
-    await this.SQLiteDbService.run(SQLQuery.DELETE_USER).then(async () => {
-      await this.SQLiteDbService.run(SQLQuery.ADD_NEW_USER,
+    await this.SQLiteDbService.run(SQLQuery.SAVE_CURRENT_USER,
           [currentUser.userId, currentUser.userName, currentUser.phoneNumber, currentUser.avatarUrl,
             currentUser.password]).then(() => {
         this.getCurrentUserFromDB();
-      })
-    })
+      });
   }
 
-  async updateUserInfo(userName: string, cameraPhoto: CameraPhoto) {
-    let user = this.currentUser.value;
-    if (userName != null && userName.trim().length > 0) {
-      user.userName = userName;
+  async updateUserPhoto(userName: string, imageWebPath: string) {
+    const formData = new FormData();
+    if (imageWebPath) {
+      const blob = await fetch(imageWebPath).then(r => r.blob());
+      formData.append('file', blob, 'file.jpg');
     }
-    if (cameraPhoto != null) {
-      this.fileWriterService.saveTemporaryImage(cameraPhoto.path).then(userAvatarUrl => {
-        this.SQLiteDbService.run(SQLQuery.UPDATE_NEW_USER, [user.userName, Capacitor.convertFileSrc(userAvatarUrl)]).
-        then(() => this.getCurrentUserFromDB());
-      });
-    } else {
-      this.SQLiteDbService.run(SQLQuery.UPDATE_NEW_USER, [user.userName, user.avatarUrl]).
-      then(() => this.getCurrentUserFromDB());
+    if (userName) {
+      formData.append("userName", userName);
     }
+    return this.httpClient.post<any>(Properties.BASE_URL + `/user/${this.currentUserId}/avatar/update`, formData)
+        .toPromise().then(user => {
+          return !!user;
+        });
   }
 }

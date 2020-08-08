@@ -6,6 +6,8 @@ import {Properties} from "../../properties/Properties";
 import {BehaviorSubject} from "rxjs";
 import {NewChatDTO} from "../../models/chat-dto.model";
 import {Contact} from "../../models/contact.model";
+import {ContactDTO} from "../../models/loginresponse.model";
+import {CurrentUser} from "../../models/current-user.model";
 
 @Injectable({
   providedIn: 'root'
@@ -16,6 +18,8 @@ export class WebSocketAPI {
   currentUserId: number;
   obtainedMessage: BehaviorSubject<MessageDTO> = new BehaviorSubject<MessageDTO>(null);
   obtainedChat: BehaviorSubject<NewChatDTO> = new BehaviorSubject<NewChatDTO>(null);
+  obtainedContactInfo: BehaviorSubject<Contact> = new BehaviorSubject<Contact>(null);
+  obtainedCurrentUserInfo: BehaviorSubject<CurrentUser> = new BehaviorSubject<CurrentUser>(null);
   subscription: any;
   isConnected: boolean = false;
 
@@ -77,6 +81,20 @@ export class WebSocketAPI {
     if (vMessage.headers.messageType === "chat") {
       let newChat: NewChatDTO = JSON.parse(vMessage.body);
       this.obtainedChat.next(newChat)
+    } else if (vMessage.headers.messageType === "userInfo") {
+      let contact: Contact = JSON.parse(vMessage.body)
+      if (contact.contactId === this.currentUserId) {
+        let currentUser: CurrentUser =  {
+          userId: contact.contactId,
+          userName: contact.contactName,
+          phoneNumber: contact.phoneNumber,
+          avatarUrl: contact.avatarUrl,
+          password: null
+        }
+        this.obtainedCurrentUserInfo.next(currentUser);
+      } else {
+        this.obtainedContactInfo.next(contact);
+      }
     } else {
       let message: MessageDTO = JSON.parse(vMessage.body);
       if (message.senderId === this.currentUserId) {
@@ -92,5 +110,13 @@ export class WebSocketAPI {
 
   getNewGroup() {
     return this.obtainedChat.asObservable();
+  }
+
+  getContactInfo() {
+    return this.obtainedContactInfo.asObservable();
+  }
+
+  getCurrentUserInfo() {
+    return this.obtainedCurrentUserInfo.asObservable();
   }
 }
